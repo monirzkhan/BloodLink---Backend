@@ -1,0 +1,163 @@
+enum AuthProvider {
+    GOOGLE
+    CREDENTIALS
+}
+
+enum UserRole {
+    CALLER
+    PATIENT
+    HOSPITAL
+    DONOR
+    ADMIN
+    SUPER_ADMIN
+}
+
+enum UserStatus {
+    ACTIVE
+    BLOCKED
+}
+
+enum BloodGroup {
+    A_POSITIVE
+    A_NEGATIVE
+    B_POSITIVE
+    B_NEGATIVE
+    AB_POSITIVE
+    AB_NEGATIVE
+    O_POSITIVE
+    O_NEGATIVE
+}
+
+enum BloodComponent {
+  WHOLE_BLOOD
+  RED_BLOOD_CELL
+  PLATELET
+  PLASMA
+  CRYOPRECIPITATE
+}
+
+enum RequestUrgency {
+  NORMAL
+  URGENT
+  EMERGENCY
+}
+
+enum BloodRequestStatus {
+  DRAFT
+  PENDING_VERIFICATION
+  APPROVED
+  REJECTED
+  MATCHING
+  DONOR_FOUND
+  PAYMENT_PENDING
+  PAYMENT_PAID
+  APPOINTMENT_CONFIRMED
+  IN_PROGRESS
+  PARTIALLY_FULFILLED
+  FULFILLED
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DonorAvailability {
+  AVAILABLE
+  UNAVAILABLE
+  BUSY
+}
+
+enum DonorOfferStatus {
+  OFFERED
+  VIEWED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
+}
+
+enum ReservationStatus {
+  RESERVED
+  PAYMENT_PENDING
+  CONFIRMED
+  RELEASED
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentProvider {
+  BKASH
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentItemType {
+  TRANSPORT
+  SCREENING
+  PLATFORM_SERVICE
+  OTHER
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  SCREENING
+  ELIGIBLE
+  INELIGIBLE
+  DONATED
+  CANCELLED
+  NO_SHOW
+}
+
+enum ScreeningStatus {
+  PENDING
+  PASSED
+  FAILED
+}
+
+enum DonationStatus {
+  SCHEDULED
+  SCREENING
+  ELIGIBLE
+  INELIGIBLE
+  DONATED
+  CANCELLED
+}
+
+enum NotificationType {
+  BLOOD_REQUEST
+  DONOR_MATCH
+  DONOR_ACCEPTED
+  PAYMENT
+  APPOINTMENT
+  DONATION
+  REQUEST_UPDATE
+  SYSTEM
+}
+
+enum NotificationChannel {
+  IN_APP
+  SMS
+  EMAIL
+  PUSH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}

@@ -5,6 +5,9 @@ node_modules
 dist
 
 /src/generated
+.agents
+.claude
+.windsurf
 
 # Lock Files
 pnpm-lock.yaml

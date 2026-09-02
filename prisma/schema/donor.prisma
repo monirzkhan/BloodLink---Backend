@@ -1,0 +1,35 @@
+model DonorProfile {
+  id                  String             @id @default(uuid())
+
+  userId              String             @unique
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bloodGroup          BloodGroup
+  availability        DonorAvailability @default(AVAILABLE)
+
+  lastDonationDate    DateTime?
+
+  dateOfBirth         DateTime?
+  gender              String?
+
+  division            String?
+  district            String?
+  area                String?
+
+  latitude            Decimal?           @db.Decimal(10, 7)
+  longitude           Decimal?           @db.Decimal(10, 7)
+
+  isVerified          Boolean            @default(false)
+
+  totalDonations      Int                @default(0)
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+
+  @@index([bloodGroup])
+  @@index([availability])
+  @@index([district])
+  @@index([latitude, longitude])
+}
+

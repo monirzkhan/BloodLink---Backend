@@ -3,6 +3,7 @@ import cors from "cors"
 import config from "./app/config";
 import cookieParser from "cookie-parser";
 import  httpStatus  from "http-status";
+import { authRoute } from "./app/module/auth/auth.route";
 
 const app: Application = express();
 
@@ -19,6 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(cookieParser());
+
+app.use('/api/v1/auth', authRoute)
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {
