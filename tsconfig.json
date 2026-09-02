@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "target": "es2023",
+        "rootDir": "./",
+        "outDir": "./dist",
+        "types": ["node"],
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "ignoreDeprecations": "6.0"
+    },
+    "include": ["src", "prisma7.config.ts"],
+    "exclude": ["node_modules", "dist"]
+}
