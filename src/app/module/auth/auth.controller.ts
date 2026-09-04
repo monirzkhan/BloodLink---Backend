@@ -4,7 +4,8 @@ import { authService } from "./auth.service";
 import { sendResponse } from "../../utility/sendResponse";
 import httpStatus  from "http-status";
 
-const createAccount=catchAsync(async(req: Request, res: Response)=>{
+
+const createAccount = catchAsync(async(req: Request, res: Response)=>{
     const payload= req.body
     const result = await authService.createAccount(payload)
 
