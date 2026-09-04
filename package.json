@@ -11,7 +11,9 @@
     "formet:check": "npx @biomejs/biome format ./src",
     "formet:fix": "npx @biomejs/biome format --write ./src",
     "lint:check": "npx @biomejs/biome lint ./src ",
-    "lint:fix": "npx @biomejs/biome lint --write ./src"
+    "lint:fix": "npx @biomejs/biome lint --write ./src",
+    "db:push": "NODE_OPTIONS=--dns-result-order=ipv4first prisma db push",
+    "db:migrate": "NODE_OPTIONS=--dns-result-order=ipv4first prisma migrate dev"
   },
   "keywords": [],
   "author": "",
@@ -42,6 +44,7 @@
     "http-status": "^2.1.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.23.0",
+    "redis": "^6.2.1",
     "zod": "^4.5.4"
   }
 }

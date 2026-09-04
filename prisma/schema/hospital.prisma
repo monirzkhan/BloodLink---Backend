@@ -1,30 +1,30 @@
 model HospitalProfile {
-  id                  String    @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId              String    @unique
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  hospitalName        String
-  registrationNumber  String?   @unique
+  hospitalName       String
+  registrationNumber String? @unique
 
-  phone               String?
-  email               String?
+  phone String?
+  email String?
 
-  division            String?
-  district            String?
-  area                String?
+  division String?
+  district String?
+  area     String?
 
-  address             String?
+  address String?
 
-  latitude            Decimal?  @db.Decimal(10, 7)
-  longitude           Decimal?  @db.Decimal(10, 7)
+  latitude  Decimal? @db.Decimal(10, 7)
+  longitude Decimal? @db.Decimal(10, 7)
 
-  isVerified          Boolean   @default(false)
+  isVerified Boolean @default(false)
 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-//   bloodRequests       BloodRequest[]
-//   appointments        Appointment[]
-//   donations           Donation[]
+  //   bloodRequests       BloodRequest[]
+  //   appointments        Appointment[]
+  //   donations           Donation[]
 }

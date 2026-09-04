@@ -1,41 +1,41 @@
 model User {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    name         String
-    email        String?      @unique
-    phone        String       @unique
-    password     String?
-    googleId     String?
-    authProvider AuthProvider @default(CREDENTIALS)
+  name         String
+  email        String?      @unique
+  phone        String       @unique
+  password     String?
+  googleId     String?
+  authProvider AuthProvider @default(CREDENTIALS)
 
-    role   UserRole   @default(CALLER)
-    status UserStatus @default(ACTIVE)
+  role   UserRole   @default(CALLER)
+  status UserStatus @default(ACTIVE)
 
-    isEmailVerified Boolean @default(false)
+  emailVerified Boolean @default(false)
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    donorProfile    DonorProfile?
-    patientProfile  PatientProfile?
-    hospitalProfile HospitalProfile?
+  donorProfile    DonorProfile?
+  patientProfile  PatientProfile?
+  hospitalProfile HospitalProfile?
 
-    // createdRequests BloodRequest[] @relation("RequestCreator")
-    // patientRequests BloodRequest[] @relation("PatientRequests")
-    // callerRequests  BloodRequest[] @relation("CallerRequests")
+  // createdRequests BloodRequest[] @relation("RequestCreator")
+  // patientRequests BloodRequest[] @relation("PatientRequests")
+  // callerRequests  BloodRequest[] @relation("CallerRequests")
 
-    // donorOffers  BloodRequestDonor[]
-    // reservations DonorReservation[]
+  // donorOffers  BloodRequestDonor[]
+  // reservations DonorReservation[]
 
-    // appointments Appointment[]
-    // donations    Donation[]
+  // appointments Appointment[]
+  // donations    Donation[]
 
-    // payments Payment[]
+  // payments Payment[]
 
-    // notifications Notification[]
+  // notifications Notification[]
 
-    // auditLogs AuditLog[]
+  // auditLogs AuditLog[]
 
-    @@index([role])
-    @@index([status])
+  @@index([role])
+  @@index([status])
 }

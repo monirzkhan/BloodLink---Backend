@@ -5,6 +5,19 @@ import { sendResponse } from "../../utility/sendResponse";
 import httpStatus  from "http-status";
 
 
+const generateOTP = catchAsync(async(req: Request, res: Response)=>{
+    const payload= req.body
+    const result = await authService.createAccount(payload)
+
+    	sendResponse(res, {
+		statusCode: httpStatus.CREATED,
+		success: true,
+		message: "OTP Sent to email Successfully",
+		data: {result},
+	
+	});
+
+})
 const createAccount = catchAsync(async(req: Request, res: Response)=>{
     const payload= req.body
     const result = await authService.createAccount(payload)
@@ -20,5 +33,6 @@ const createAccount = catchAsync(async(req: Request, res: Response)=>{
 })
 
 export const authController={
-    createAccount
+    createAccount,
+	generateOTP
 }

@@ -1,31 +1,31 @@
 enum AuthProvider {
-    GOOGLE
-    CREDENTIALS
+  GOOGLE
+  CREDENTIALS
 }
 
 enum UserRole {
-    CALLER
-    PATIENT
-    HOSPITAL
-    DONOR
-    ADMIN
-    SUPER_ADMIN
+  CALLER
+  PATIENT
+  HOSPITAL
+  DONOR
+  ADMIN
+  SUPER_ADMIN
 }
 
 enum UserStatus {
-    ACTIVE
-    BLOCKED
+  ACTIVE
+  BLOCKED
 }
 
 enum BloodGroup {
-    A_POSITIVE
-    A_NEGATIVE
-    B_POSITIVE
-    B_NEGATIVE
-    AB_POSITIVE
-    AB_NEGATIVE
-    O_POSITIVE
-    O_NEGATIVE
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
 }
 
 enum BloodComponent {

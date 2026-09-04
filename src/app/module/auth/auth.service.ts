@@ -4,8 +4,24 @@ import { prisma } from "../../lib/prisma"
 import bcrypt from "bcrypt"
 import { jwtUtils } from "../../utility/jwt"
 import { SignOptions } from "jsonwebtoken"
+import { ICreateAccountPayload } from "./auth.interface"
 
-const createAccount =async(payload: any)=>{
+const generateOTP =async(payload: ICreateAccountPayload)=>{
+    const {name, password, phone, donorProfile} = payload
+    const email = payload.email.trim().toLowerCase();
+
+    const isUserExist = await prisma.user.findUnique({
+        where: {
+            email
+        }
+    })
+    if(isUserExist){
+        throw new Error("User Already Exist")
+    }
+
+}
+
+const createAccount =async(payload: ICreateAccountPayload)=>{
     const {name, password, phone, donorProfile} = payload
     const email = payload.email.trim().toLowerCase();
 
@@ -27,7 +43,7 @@ const createAccount =async(payload: any)=>{
             phone,
             donorProfile:{
                 create: {
-                    bloodGroup: donorProfile.bloodGroup      
+                    bloodGroup: donorProfile?.bloodGroup      
                 }
             }
         },

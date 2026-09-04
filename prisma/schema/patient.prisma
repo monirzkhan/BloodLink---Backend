@@ -1,17 +1,17 @@
 model PatientProfile {
-  id                  String    @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId              String    @unique
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  dateOfBirth         DateTime?
-  gender              String?
+  dateOfBirth DateTime?
+  gender      String?
 
-  bloodGroup          BloodGroup?
+  bloodGroup BloodGroup?
 
-  emergencyContact    String?
-  emergencyPhone      String?
+  emergencyContact String?
+  emergencyPhone   String?
 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

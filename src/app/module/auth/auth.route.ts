@@ -7,6 +7,7 @@ const router = Router()
 
 router.post('/register', 
     zoDvalidation(userValidation.UserRegistrationZodSchema),
-    authController.createAccount)
+    authController.generateOTP
+);
 
 export const authRoute=router
