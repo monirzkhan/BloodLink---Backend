@@ -78,7 +78,7 @@
                 font-size:16px;
                 line-height:1.6;
               ">
-                Hi <%= name %>,,
+                Hi <%= name %>,
               </p>
 
               <p style="
@@ -121,7 +121,7 @@
                         letter-spacing:8px;
                         color:#1d4ed8;
                       ">
-                        <%=otp%>
+                        <%= otp %>
                       </div>
 
                     </div>
@@ -136,7 +136,7 @@
                 font-size:14px;
                 color:#6b7280;
               ">
-                This code will expire in <strong><%= expirationTime%> minutes</strong>.
+                This code will expire in <strong><%= expirationTime %> minutes</strong>.
               </p>
 
               <p style="
@@ -166,7 +166,7 @@
                 font-size:13px;
                 color:#94a3b8;
               ">
-                © <%=new Date().getFullYear()%> BloodLink. All rights reserved.
+                © <%= new Date().getFullYear() %> BloodLink. All rights reserved.
               </p>
 
               <p style="

@@ -1,4 +1,4 @@
-import { BloodGroup } from "../../../generated/prisma/enums";
+import type { BloodGroup } from "../../../generated/prisma/enums";
 
 export interface ICreateAccountPayload {
 	name: string;

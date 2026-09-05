@@ -13,11 +13,19 @@ const UserRegistrationZodSchema = z.object({
 		.refine((val) => /[a-z]/.test(val), "Add at least one lowercase letter")
 		.refine((val) => /[^A-Za-z0-9]/.test(val), "Needs special char")
 		.refine((val) => /[0-9]/.test(val), "Add at least one number"),
-    phone:z.string().length(11, "Mobile number must be at least 11 characters long"),
-	donorProfile: z.object({
-		bloodGroup: z.string().min(10, "Blood Group is required, Example: A_POSITIVE, B_Negative, O_Positive etc"),
-	}).optional()
-    
+	phone: z
+		.string()
+		.length(11, "Mobile number must be at least 11 characters long"),
+	donorProfile: z
+		.object({
+			bloodGroup: z
+				.string()
+				.min(
+					10,
+					"Blood Group is required, Example: A_POSITIVE, B_Negative, O_Positive etc",
+				),
+		})
+		.optional(),
 });
 
 const userLoginZodSchema = z.object({

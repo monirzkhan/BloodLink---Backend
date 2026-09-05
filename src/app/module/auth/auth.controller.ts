@@ -1,26 +1,23 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { catchAsync } from "../../utility/catchAsync";
 import { authService } from "./auth.service";
 import { sendResponse } from "../../utility/sendResponse";
-import httpStatus  from "http-status";
+import httpStatus from "http-status";
 
+const generateOTP = catchAsync(async (req: Request, res: Response) => {
+	const payload = req.body;
+	const result = await authService.generateOTP(payload);
 
-const generateOTP = catchAsync(async(req: Request, res: Response)=>{
-    const payload= req.body
-    const result = await authService.generateOTP(payload)
-
-    	sendResponse(res, {
+	sendResponse(res, {
 		statusCode: httpStatus.OK,
 		success: true,
 		message: "OTP Sent to email Successfully",
-		data: {result},
-	
+		data: { result },
 	});
-
-})
-const verifyEmailOTP = catchAsync(async(req: Request, res: Response)=>{
-    const payload= req.body
-    const result = await authService.createAccount(payload)
+});
+const verifyEmailOTP = catchAsync(async (req: Request, res: Response) => {
+	const payload = req.body;
+	const result = await authService.createAccount(payload);
 	const { accessToken, refreshToken } = result;
 
 	res.cookie("accessToken", accessToken, {
@@ -36,18 +33,15 @@ const verifyEmailOTP = catchAsync(async(req: Request, res: Response)=>{
 		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 	});
 
-
-    	sendResponse(res, {
+	sendResponse(res, {
 		statusCode: httpStatus.CREATED,
 		success: true,
 		message: "User Created Successfully",
-		data: {result},
-	
+		data: { result },
 	});
+});
 
-})
-
-export const authController={
+export const authController = {
 	generateOTP,
-	verifyEmailOTP
-}
+	verifyEmailOTP,
+};

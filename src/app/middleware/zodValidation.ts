@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from "express";
-import z from "zod";
+import type { NextFunction, Request, Response } from "express";
+import type z from "zod";
 import { catchAsync } from "../utility/catchAsync";
 
 export const zoDvalidation = (zodSchema: z.ZodObject) => {

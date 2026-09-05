@@ -1,4 +1,3 @@
-
 import { UserRole } from "../../generated/prisma/enums";
 import config from "../config";
 import { prisma } from "../lib/prisma";
@@ -20,7 +19,7 @@ export const seedSuperAdmin = async () => {
 		const name = config.super_admin_name;
 		const email = config.super_admin_email;
 		const password = config.super_admin_password;
-        const phone = config.super_admin_phone;
+		const phone = config.super_admin_phone;
 
 		if (!name || !email || !password || !phone) {
 			throw new Error(
@@ -70,9 +69,9 @@ export const seedTesterAdmin = async () => {
 		const name = config.tester_admin_name;
 		const email = config.tester_admin_email;
 		const password = config.tester_admin_password;
-        const phone = config.tester_admin_phone;
+		const phone = config.tester_admin_phone;
 
-		if (!name || !email || !password ||!phone) {
+		if (!name || !email || !password || !phone) {
 			throw new Error(
 				"Tester Admin name, email, password, Phone not found in env file",
 			);
@@ -120,7 +119,7 @@ export const seedTesterDonor = async () => {
 		const name = config.tester_donor_name;
 		const email = config.tester_donor_email;
 		const password = config.tester_donor_password;
-		const phone = config.tester_donor_phone;        
+		const phone = config.tester_donor_phone;
 
 		if (!name || !email || !password || !phone) {
 			throw new Error(
