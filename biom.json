@@ -9,7 +9,7 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"**",
-			"!src/genrated",
+			"!src/generated",
 			"!src/app/templates"
 		]
 	},
@@ -37,7 +37,7 @@
 		},
 		"includes": [
 			"**",
-			"!src/genrated",
+			"!src/generated",
 			"!src/app/templates"
 		]
 	},

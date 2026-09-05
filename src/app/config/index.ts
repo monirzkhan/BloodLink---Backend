@@ -28,5 +28,7 @@ export default{
     tester_donor_email: process.env.TESTER_DONOR_EMAIL!,
     tester_donor_password: process.env.TESTER_DONOR_PASSWORD!,
     tester_donor_phone: process.env.TESTER_DONOR_PHONE!,
-
+    smtp_user: process.env.SMTP_USER!,
+    smtp_password: process.env.SMTP_PASSWORD!,
+    smtp_sender: process.env.SMTP_SENDER!
 }

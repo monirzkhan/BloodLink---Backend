@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to BloodLink</title>
+</head>
+
+<body style="
+  margin:0;
+  padding:0;
+  background-color:#f4f7fb;
+  font-family:Arial, Helvetica, sans-serif;
+  color:#1f2937;
+">
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0"
+    style="background-color:#f4f7fb; padding:40px 15px;">
+    <tr>
+      <td align="center">
+
+        <table width="100%" cellpadding="0" cellspacing="0" border="0"
+          style="
+            max-width:600px;
+            background:#ffffff;
+            border-radius:16px;
+            overflow:hidden;
+            box-shadow:0 8px 30px rgba(0,0,0,0.08);
+          ">
+
+          <!-- Header -->
+          <tr>
+            <td style="
+              background:linear-gradient(135deg,#2563eb,#4f46e5);
+              padding:40px 30px;
+              text-align:center;
+            ">
+
+              <div style="
+                width:64px;
+                height:64px;
+                line-height:64px;
+                margin:0 auto 18px;
+                background:rgba(255,255,255,0.15);
+                border-radius:50%;
+                font-size:30px;
+                color:#ffffff;
+              ">
+                ✓
+              </div>
+
+              <h1 style="
+                margin:0;
+                color:#ffffff;
+                font-size:28px;
+                font-weight:700;
+              ">
+                Welcome to BloodLink
+              </h1>
+
+              <p style="
+                margin:10px 0 0;
+                color:#dbeafe;
+                font-size:14px;
+              ">
+                Your account has been created successfully
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding:40px 35px;">
+
+              <p style="
+                margin:0 0 18px;
+                font-size:17px;
+                line-height:1.6;
+              ">
+                Hi <strong><%= name %></strong>,
+              </p>
+
+              <p style="
+                margin:0 0 20px;
+                font-size:15px;
+                line-height:1.7;
+                color:#4b5563;
+              ">
+                Welcome to <strong>BloodLink</strong>! We're happy to
+                have you with us.
+              </p>
+
+              <p style="
+                margin:0 0 25px;
+                font-size:15px;
+                line-height:1.7;
+                color:#4b5563;
+              ">
+                Your registration has been completed successfully, and your
+                account is now ready to use.
+              </p>
+
+              <!-- Success Box -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="
+                  background:#f0fdf4;
+                  border:1px solid #bbf7d0;
+                  border-radius:12px;
+                  margin-bottom:25px;
+                ">
+                <tr>
+                  <td style="padding:20px;">
+
+                    <p style="
+                      margin:0 0 8px;
+                      font-size:14px;
+                      font-weight:700;
+                      color:#15803d;
+                    ">
+                      ✓ Registration Successful
+                    </p>
+
+                    <p style="
+                      margin:0;
+                      font-size:13px;
+                      line-height:1.6;
+                      color:#166534;
+                    ">
+                      Your BloodLink account has been successfully
+                      created and is ready to use.
+                    </p>
+
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Account Information -->
+              <% if (email) { %>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="
+                  background:#f8fafc;
+                  border-radius:12px;
+                  margin-bottom:25px;
+                ">
+                <tr>
+                  <td style="padding:20px;">
+
+                    <p style="
+                      margin:0 0 12px;
+                      font-size:13px;
+                      color:#64748b;
+                      text-transform:uppercase;
+                      letter-spacing:1px;
+                    ">
+                      Account Email
+                    </p>
+
+                    <p style="
+                      margin:0;
+                      font-size:15px;
+                      font-weight:600;
+                      color:#1e293b;
+                    ">
+                      <%= email %>
+                    </p>
+
+                  </td>
+                </tr>
+              </table>
+              <% } %>
+
+              <p style="
+                margin:0 0 15px;
+                font-size:15px;
+                line-height:1.7;
+                color:#4b5563;
+              ">
+                You can now log in and start using BloodLink.
+                We look forward to providing you with a great experience.
+              </p>
+
+              <!-- CTA -->
+              <% if (loginUrl) { %>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding:10px 0 20px;">
+
+                    <a href="<%= loginUrl %>" style="
+                      display:inline-block;
+                      background:#2563eb;
+                      color:#ffffff;
+                      text-decoration:none;
+                      font-size:15px;
+                      font-weight:600;
+                      padding:14px 30px;
+                      border-radius:8px;
+                    ">
+                      Login to Your Account
+                    </a>
+
+                  </td>
+                </tr>
+              </table>
+              <% } %>
+
+              <p style="
+                margin:5px 0 0;
+                font-size:13px;
+                line-height:1.6;
+                color:#94a3b8;
+                text-align:center;
+              ">
+                If you did not create this account, please contact our
+                support team immediately.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="
+              background:#f8fafc;
+              padding:25px 30px;
+              text-align:center;
+              border-top:1px solid #e5e7eb;
+            ">
+
+              <p style="
+                margin:0;
+                font-size:13px;
+                color:#94a3b8;
+              ">
+                © <%= new Date().getFullYear() %> BloodLink.
+                All rights reserved.
+              </p>
+
+              <p style="
+                margin:8px 0 0;
+                font-size:12px;
+                color:#cbd5e1;
+              ">
+                This is an automated email. Please do not reply.
+              </p>
+
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

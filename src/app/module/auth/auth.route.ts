@@ -9,5 +9,9 @@ router.post('/register',
     zoDvalidation(userValidation.UserRegistrationZodSchema),
     authController.generateOTP
 );
+router.post('/verify-email-otp', 
+    
+    authController.verifyEmailOTP
+);
 
 export const authRoute=router
