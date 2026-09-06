@@ -6,6 +6,7 @@ import { jwtUtils } from "../../utility/jwt";
 import type { SignOptions } from "jsonwebtoken";
 import type {
 	ICreateAccountPayload,
+	ILoginUserPayload,
 	IRedisRegistrationPayload,
 	IVerifyEmailOTPPayload,
 } from "./auth.interface";
@@ -190,7 +191,68 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 	return { user: createdUser, accessToken, refreshToken };
 };
 
+const loginUser = async (payload: ILoginUserPayload) => {
+	const { password } = payload;
+	const email = payload.email.trim().toLowerCase();
+
+	const user = await prisma.user.findUnique({
+		where: { email },
+	});
+
+	if (!user) {
+		throw new Error("User not found");
+	}
+
+	if (user.status === UserStatus.BLOCKED) {
+		throw new Error("User is blocked");
+	}
+
+	// if (user.isDeleted || user.status === UserStatus.DELETED) {
+	// 	throw new Error("User is deleted");
+	// }
+
+	if (user.password === null && user.googleId !== null) {
+		throw new Error(
+			"User Already has account with Google. Please try to login with google",
+		);
+	}
+
+	const isPasswordMatched = await bcrypt.compare(
+		password,
+		user.password as string,
+	);
+
+	if (!isPasswordMatched) {
+		throw new Error("Invalid credentials");
+	}
+
+	const jwtPayload = {
+		userId: user.id,
+		name: user.name,
+		email: user.email,
+		role: user.role,
+	};
+
+	const accessToken = jwtUtils.createToken(
+		jwtPayload,
+		config.jwt_access_secret,
+		config.jwt_access_expires_in as SignOptions,
+	);
+
+	const refreshToken = jwtUtils.createToken(
+		jwtPayload,
+		config.jwt_refresh_secret,
+		config.jwt_refresh_expires_in as SignOptions,
+	);
+
+	return {
+		accessToken,
+		refreshToken,
+	};
+};
+
 export const authService = {
 	createAccount,
 	generateOTP,
+	loginUser,
 };
