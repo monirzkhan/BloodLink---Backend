@@ -3,6 +3,8 @@ import { catchAsync } from "../../utility/catchAsync";
 import { authService } from "./auth.service";
 import { sendResponse } from "../../utility/sendResponse";
 import httpStatus from "http-status";
+import { IRequestUser } from "./auth.interface";
+import { AppError } from "../../utility/AppError";
 
 const generateOTP = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
@@ -43,7 +45,10 @@ const verifyEmailOTP = catchAsync(async (req: Request, res: Response) => {
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	const result = await authService.loginUser(payload);
+	const ipAddress = req.ip === "::1"
+        ? "127.0.0.1"
+        : req.ip
+	const result = await authService.loginUser(payload, ipAddress as string);
 	const { accessToken, refreshToken } = result;
 
 	res.cookie("accessToken", accessToken, {
@@ -69,9 +74,27 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 		},
 	});
 });
+const getMe = catchAsync(async (req: Request, res: Response) => {
+	const user = req.user as unknown as IRequestUser;
 
+	if (!user) {
+		throw new AppError(httpStatus.BAD_REQUEST, "User information is missing in the request");
+	}
+
+	const result = await authService.getMe(user);
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "User profile fetched successfully",
+		data: result,
+	});
+});
+
+
+	
 export const authController = {
 	generateOTP,
 	verifyEmailOTP,
-	loginUser
+	loginUser,
+	getMe
 };

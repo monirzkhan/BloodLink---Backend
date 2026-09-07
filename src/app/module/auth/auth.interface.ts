@@ -1,4 +1,4 @@
-import type { BloodGroup } from "../../../generated/prisma/enums";
+import type { BloodGroup, UserRole } from "../../../generated/prisma/enums";
 
 export interface ICreateAccountPayload {
 	name: string;
@@ -26,4 +26,10 @@ export interface IVerifyEmailOTPPayload {
 export interface ILoginUserPayload {
 	email: string;
 	password: string;
+}
+export interface IRequestUser {
+	userId: string;
+	email: string;
+	name: string;
+	role: UserRole;
 }

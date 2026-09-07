@@ -8,6 +8,7 @@ import type {
 	ICreateAccountPayload,
 	ILoginUserPayload,
 	IRedisRegistrationPayload,
+	IRequestUser,
 	IVerifyEmailOTPPayload,
 } from "./auth.interface";
 import crypto from "crypto";
@@ -191,7 +192,7 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 	return { user: createdUser, accessToken, refreshToken };
 };
 
-const loginUser = async (payload: ILoginUserPayload) => {
+const loginUser = async (payload: ILoginUserPayload, ipAddress: string) => {
 	const { password } = payload;
 	const email = payload.email.trim().toLowerCase();
 
@@ -245,14 +246,60 @@ const loginUser = async (payload: ILoginUserPayload) => {
 		config.jwt_refresh_expires_in as SignOptions,
 	);
 
+	//send Welcome Email
+	const templatePath = path.join(
+		process.cwd(),
+		"/src/app/templates/login-successful.ejs",
+	);
+	const templateData = {
+		name: user.name,
+		email: user.email,
+		loginUrl: "https://localhost:5000/login",
+		loginTime: new Date().toLocaleString("en-US", {
+			timeZone: "Asia/Dhaka",
+			hour12: true,
+		}),
+		device: userInfo().username,
+		ipAddress: ipAddress,
+	};
+
+	const html = await ejs.renderFile(templatePath, templateData);
+	await transporter.sendMail({
+		from: `"BloodLink" <${config.smtp_sender}>`,
+		to: email,
+		subject: "Login Notification",
+		html,
+	});
+
 	return {
 		accessToken,
 		refreshToken,
 	};
 };
 
+const getMe = async (user: IRequestUser) => {
+	const isUserExists = await prisma.user.findUnique({
+		where: {
+			id: user.userId,
+		},
+		include: {
+			donorProfile: true,
+		},
+		omit: {
+			password: true,
+		},
+	});
+
+	if (!isUserExists) {
+		throw new Error("User not found");
+	}
+
+	return isUserExists;
+};
+
 export const authService = {
 	createAccount,
 	generateOTP,
 	loginUser,
+	getMe
 };
