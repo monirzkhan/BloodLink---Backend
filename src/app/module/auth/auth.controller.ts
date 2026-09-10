@@ -121,11 +121,40 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+	const payload = req.body;
+	await authService.forgotPassword(payload);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "OTP Sent to your email successfully",
+		data: {},
+	});
+});
+
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+	const payload = req.body;
+	const ipAddress = req.ip === "::1"
+        ? "127.0.0.1"
+        : req.ip
+	await authService.resetPassword(payload, ipAddress as string);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Password has been changed Successfully",
+		data: {},
+	});
+});
+
 	
 export const authController = {
 	generateOTP,
 	verifyEmailOTP,
 	loginUser,
 	getMe,
-	refreshToken
+	refreshToken,
+	forgotPassword,
+	resetPassword
 };

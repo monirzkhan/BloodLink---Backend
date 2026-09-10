@@ -33,3 +33,13 @@ export interface IRequestUser {
 	name: string;
 	role: UserRole;
 }
+
+export interface IForgotPasswordPayload {
+	email: string;
+}
+
+export interface IResetPasswordPayload {
+	email: string;
+	otp: string;
+	newPassword: string;
+}

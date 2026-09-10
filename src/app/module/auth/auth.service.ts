@@ -6,9 +6,11 @@ import { jwtUtils } from "../../utility/jwt";
 import type { JwtPayload, SignOptions } from "jsonwebtoken";
 import type {
 	ICreateAccountPayload,
+	IForgotPasswordPayload,
 	ILoginUserPayload,
 	IRedisRegistrationPayload,
 	IRequestUser,
+	IResetPasswordPayload,
 	IVerifyEmailOTPPayload,
 } from "./auth.interface";
 import crypto from "crypto";
@@ -179,7 +181,7 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 	const templateData = {
 		name: userDataPayload.name,
 		email: userDataPayload.email,
-		loginUrl: "https://localhost:5000/login",
+		loginUrl: `${config.frontend_url}/login`,
 	};
 
 	const html = await ejs.renderFile(templatePath, templateData);
@@ -349,10 +351,150 @@ const refreshToken = async (token: string) => {
 	};
 };
 
+const forgotPassword = async (payload: IForgotPasswordPayload) => {
+	const { email } = payload;
+
+	const isUserExist = await prisma.user.findUnique({
+		where: {
+			email,
+		},
+	});
+
+	if (!isUserExist) {
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
+	}
+	if (isUserExist.status === "BLOCKED") {
+		throw new AppError(httpStatus.FORBIDDEN, "User is Blocked");
+	}
+	if (!isUserExist.emailVerified) {
+		throw new AppError(httpStatus.BAD_REQUEST, "User is not verified");
+	}
+	// if (isUserExist.isDeleted && isUserExist.status === "DELETED") {
+	// 	throw new AppError(httpStatus.NOT_FOUND, "User is Deleted");
+	// }
+	if (isUserExist.googleId && isUserExist.authProvider === "GOOGLE") {
+		throw new AppError(httpStatus.BAD_REQUEST, "User account with google");
+	}
+
+	const otp = crypto.randomInt(100000, 1000000);
+	const key = `Forgot-Password-OTP: ${isUserExist.email}`;
+	const expirationSeconds = 5 * 60;
+
+	await redis.set(key, otp, {
+		expiration: {
+			type: "EX",
+			value: expirationSeconds,
+		},
+	});
+
+	//Send Email Template using EJS
+	const templatePath = path.join(
+		process.cwd(),
+		"/src/app/templates/forgot-password.ejs",
+	);
+	const templateData = {
+		name: isUserExist.name,
+		email: isUserExist.email,
+		otp,
+		expirationTime: expirationSeconds / 60,
+	};
+
+	const html = await ejs.renderFile(templatePath, templateData);
+
+	await transporter.sendMail({
+		from: `"BloodLink"<${config.smtp_sender}>`,
+		to: email,
+		subject: "Forgot Password",
+		html,
+	});
+};
+
+const resetPassword = async (payload: IResetPasswordPayload, ipAddress: string) => {
+	const { email, newPassword, otp } = payload;
+	const isUserExist = await prisma.user.findUnique({
+		where: {
+			email,
+		},
+	});
+
+	if (!isUserExist) {
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
+	}
+	if (isUserExist.status === "BLOCKED") {
+		throw new AppError(httpStatus.FORBIDDEN, "User is Blocked");
+	}
+	if (!isUserExist.emailVerified) {
+		throw new AppError(httpStatus.BAD_REQUEST, "User is not verified");
+	}
+		// if (isUserExist.isDeleted && isUserExist.status === "DELETED") {
+		// 	throw new AppError(httpStatus.NOT_FOUND, "User is Deleted");
+		// }
+	if (isUserExist.googleId && isUserExist.authProvider === "GOOGLE") {
+		throw new AppError(httpStatus.BAD_REQUEST, "User account with google");
+	}
+
+	const key = `Forgot-Password-OTP: ${isUserExist.email}`;
+	const redisOTP = await redis.get(key);
+
+
+	if (!redisOTP) {
+		throw new AppError(httpStatus.BAD_REQUEST, "OTP not found");
+	}
+
+	if (redisOTP !== otp) {
+		throw new AppError(httpStatus.BAD_REQUEST, "OTP does not match");
+	}
+
+	const newHashPassword = await bcrypt.hash(
+		newPassword,
+		Number(config.bcrypt_salt_rounds),
+	);
+
+	const updatedUser = await prisma.user.update({
+		where: {
+			email
+		},
+		data: {
+			password: newHashPassword,
+		},
+	});
+	await redis.del([key]);
+
+	//Send Email Template using EJS
+	const templatePath = path.join(
+		process.cwd(),
+		"/src/app/templates/password-changed.ejs",
+	);
+
+	const templateData = {
+		name: isUserExist.name,
+		email: isUserExist.email,
+		changedAt: new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Dhaka",
+        hour12: true,
+    }),
+
+    ipAddress,
+
+    loginUrl: `${config.frontend_url}/login`,
+		
+	};
+
+	const html = await ejs.renderFile(templatePath, templateData);
+	await transporter.sendMail({
+		from: `"BloodLink"<${config.smtp_sender}>`,
+		to: email,
+		subject: "Changed Password",
+		html
+	});
+};
+
 export const authService = {
 	createAccount,
 	generateOTP,
 	loginUser,
 	getMe,
-	refreshToken
+	refreshToken,
+	forgotPassword,
+	resetPassword
 };
