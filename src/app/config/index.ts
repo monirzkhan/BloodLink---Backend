@@ -33,4 +33,10 @@ export default {
 	smtp_sender: process.env.SMTP_SENDER!,
 	node_env: process.env.NODE_ENV || "development",
 	google_client_id:process.env.GOOGLE_CLIENT_ID!,
+	bkash_base_url: process.env.BKASH_BASE_URL!,
+	bkash_username: process.env.BKASH_USERNAME!,
+	bkash_password: process.env.BKASH_PASSWORD!,
+	bkash_app_key: process.env.BKASH_APP_KEY!,
+	bkash_app_secret: process.env.BKASH_APP_SECRET!,
+	bkash_callback_url: process.env.BKASH_CALLBACK_URL!,
 };
