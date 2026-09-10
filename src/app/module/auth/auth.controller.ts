@@ -148,6 +148,34 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const googleLogin = catchAsync(async (req: Request, res: Response) => {
+	const payload = req.body;
+	const result = await authService.googleLogin(payload);
+	const { accessToken, refreshToken } = result;
+
+	res.cookie("accessToken", accessToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "none",
+		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+	});
+	res.cookie("refreshToken", refreshToken, {
+		httpOnly: true,
+		secure: false,
+		sameSite: "none",
+		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+	});
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Google Login successfully",
+		data: {
+			accessToken,
+			refreshToken,
+		},
+	});
+});
 	
 export const authController = {
 	generateOTP,
@@ -156,5 +184,6 @@ export const authController = {
 	getMe,
 	refreshToken,
 	forgotPassword,
-	resetPassword
+	resetPassword,
+	googleLogin
 };

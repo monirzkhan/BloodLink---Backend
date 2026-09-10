@@ -32,4 +32,5 @@ export default {
 	smtp_password: process.env.SMTP_PASSWORD!,
 	smtp_sender: process.env.SMTP_SENDER!,
 	node_env: process.env.NODE_ENV || "development",
+	google_client_id:process.env.GOOGLE_CLIENT_ID!,
 };

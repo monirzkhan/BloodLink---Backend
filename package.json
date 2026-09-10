@@ -43,6 +43,7 @@
     "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
+    "google-auth-library": "^11.0.2",
     "http-status": "^2.1.0",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^10.0.0",

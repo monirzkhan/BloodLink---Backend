@@ -7,6 +7,7 @@ import type { JwtPayload, SignOptions } from "jsonwebtoken";
 import type {
 	ICreateAccountPayload,
 	IForgotPasswordPayload,
+	IGoogleLoginPayload,
 	ILoginUserPayload,
 	IRedisRegistrationPayload,
 	IRequestUser,
@@ -18,9 +19,11 @@ import { redis } from "../../lib/redis";
 import path from "path";
 import ejs from "ejs";
 import { transporter } from "../../lib/nodemailer";
-import { UserStatus } from "../../../generated/prisma/enums";
+import { AuthProvider, UserRole, UserStatus } from "../../../generated/prisma/enums";
 import { AppError } from "../../utility/AppError";
 import httpStatus from "http-status";
+import { TokenPayload } from "google-auth-library";
+import { googleClient } from "../../lib/googleAuth";
 
 const generateOTP = async (payload: ICreateAccountPayload) => {
 	const { name, password, phone, donorProfile } = payload;
@@ -489,6 +492,130 @@ const resetPassword = async (payload: IResetPasswordPayload, ipAddress: string) 
 	});
 };
 
+const googleLogin = async (payload: IGoogleLoginPayload) => {
+	let googleIdTokenPayload: TokenPayload | undefined | null = null;
+
+	try {
+		const ticket = await googleClient.verifyIdToken({
+			idToken: payload.idToken,
+			audience: config.google_client_id,
+		});
+
+		googleIdTokenPayload = ticket.getPayload();
+		console.log(googleIdTokenPayload, "Google Token");
+	} catch (error) {
+		console.log("Google ID Token Verification Failed", error);
+		throw new AppError(httpStatus.BAD_REQUEST,"Invalid Or Expired Google Id Token");
+	}
+	if (!googleIdTokenPayload) {
+		throw new AppError(httpStatus.BAD_REQUEST,"Invalid Or Expired Google Id Token");
+	}
+
+	if (!googleIdTokenPayload.email) {
+		throw new AppError(httpStatus.NOT_FOUND,"Google Email Not Found");
+	}
+	if (!googleIdTokenPayload.name) {
+		throw new AppError(httpStatus.NOT_FOUND,"Google Email User Name Not Found");
+	}
+
+	const ifUserExistWithGoogleAuth = await prisma.user.findUnique({
+		where: {
+			email: googleIdTokenPayload.email,
+			role: UserRole.CALLER || UserRole.PATIENT || UserRole.DONOR,
+			googleId: googleIdTokenPayload.sub,
+		},
+	});
+
+	let user = ifUserExistWithGoogleAuth;
+
+	if (!ifUserExistWithGoogleAuth) {
+		const ifUserExistWithCredentials = await prisma.user.findUnique({
+			where: {
+				email: googleIdTokenPayload.email,
+				role: UserRole.CALLER || UserRole.PATIENT || UserRole.DONOR,
+				authProvider: AuthProvider.CREDENTIALS,
+			},
+		});
+
+		if (ifUserExistWithCredentials) {
+			if (!ifUserExistWithCredentials.emailVerified) {
+				throw new AppError(httpStatus.CONFLICT,"Email not varified");
+			}
+			if (ifUserExistWithCredentials.status === UserStatus.BLOCKED) {
+				throw new AppError(httpStatus.CONFLICT,"User Is Blocked");
+			}
+
+			// if (
+			// 	ifPatientExistWithCredentials.isDeleted ||
+			// 	ifPatientExistWithCredentials.status === UserStatus.DELETED
+			// ) {
+			// 	throw new Error("User Is Deleted");
+			// }
+
+			user = await prisma.user.update({
+				where: {
+					id: ifUserExistWithCredentials.id,
+				},
+				data: {
+					googleId: googleIdTokenPayload.sub,
+				},
+			});
+		} else {
+			user = await prisma.user.create({
+				data: {
+					name: googleIdTokenPayload.name,
+					email: googleIdTokenPayload.email,
+					phone: "",
+					role: UserRole.DONOR,
+					googleId: googleIdTokenPayload.sub,
+					authProvider: AuthProvider.GOOGLE,
+					emailVerified: true,
+					donorProfile: {
+						create: {
+							bloodGroup:"B_POSITIVE"
+						},
+					},
+				},
+			});
+		}
+	}
+	if (!user) {
+		throw new AppError(httpStatus.NOT_FOUND,"User Not Found");
+	}
+
+	if (user.status === UserStatus.BLOCKED) {
+		throw new AppError(httpStatus.BAD_REQUEST,"User Is Blocked");
+	}
+
+	// if (user.isDeleted || user.status === UserStatus.DELETED) {
+	// 	throw new Error("User Is Deleted");
+	// }
+	const jwtPayload = {
+		userId: user.id,
+		name: user.name,
+		email: user.email,
+		role: user.role,
+	};
+
+	const accessToken = jwtUtils.createToken(
+		jwtPayload,
+		config.jwt_access_secret,
+		config.jwt_access_expires_in as SignOptions,
+	);
+
+	const refreshToken = jwtUtils.createToken(
+		jwtPayload,
+		config.jwt_refresh_secret,
+		config.jwt_refresh_expires_in as SignOptions,
+	);
+
+	return {
+		accessToken,
+		refreshToken,
+	};
+};
+
+
 export const authService = {
 	createAccount,
 	generateOTP,
@@ -496,5 +623,6 @@ export const authService = {
 	getMe,
 	refreshToken,
 	forgotPassword,
-	resetPassword
+	resetPassword,
+	googleLogin
 };
