@@ -3,7 +3,7 @@ import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import bcrypt from "bcrypt";
 import { jwtUtils } from "../../utility/jwt";
-import type { SignOptions } from "jsonwebtoken";
+import type { JwtPayload, SignOptions } from "jsonwebtoken";
 import type {
 	ICreateAccountPayload,
 	ILoginUserPayload,
@@ -17,6 +17,8 @@ import path from "path";
 import ejs from "ejs";
 import { transporter } from "../../lib/nodemailer";
 import { UserStatus } from "../../../generated/prisma/enums";
+import { AppError } from "../../utility/AppError";
+import httpStatus from "http-status";
 
 const generateOTP = async (payload: ICreateAccountPayload) => {
 	const { name, password, phone, donorProfile } = payload;
@@ -98,27 +100,27 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 		throw new Error("User is Blocked");
 	}
 	if (isUserExist?.emailVerified) {
-		throw new Error("User is already varified");
+		throw new AppError(httpStatus.BAD_REQUEST, "User is already verified");
 	}
 	// if (isUserExist?.isDeleted && isUserExist.status === "DELETED") {
-	// 	throw new Error("User is Deleted");
+	// 	throw new AppError(httpStatus.NOT_FOUND, "User is Deleted");
 	// }
 
 	const emailKey = `User-Registration-OTP:${email}`;
 
 	const redisOTP = await redis.get(emailKey);
 	if (!redisOTP) {
-		throw new Error("OTP not found");
+		throw new AppError(httpStatus.NOT_FOUND, "OTP not found");
 	}
 	if (redisOTP !== otp) {
-		throw new Error("OTP does not match");
+		throw new AppError(httpStatus.BAD_REQUEST, "OTP does not match");
 	}
 	await redis.del([emailKey]);
 
 	const redisDataKey = `User-Registration-Data:${email}`;
 	const redisDataPayload = await redis.get(redisDataKey);
 	if (!redisDataPayload) {
-		throw new Error("User data not found in Redis");
+		throw new AppError(httpStatus.NOT_FOUND,"User data not found in Redis");
 	}
 
 	const userDataPayload: IRedisRegistrationPayload =
@@ -205,15 +207,16 @@ const loginUser = async (payload: ILoginUserPayload, ipAddress: string) => {
 	}
 
 	if (user.status === UserStatus.BLOCKED) {
-		throw new Error("User is blocked");
+		throw new AppError(httpStatus.FORBIDDEN, "User is blocked");
 	}
 
 	// if (user.isDeleted || user.status === UserStatus.DELETED) {
-	// 	throw new Error("User is deleted");
+	// 	throw new AppError(httpStatus.NOT_FOUND, "User is deleted");
 	// }
 
 	if (user.password === null && user.googleId !== null) {
-		throw new Error(
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
 			"User Already has account with Google. Please try to login with google",
 		);
 	}
@@ -224,7 +227,7 @@ const loginUser = async (payload: ILoginUserPayload, ipAddress: string) => {
 	);
 
 	if (!isPasswordMatched) {
-		throw new Error("Invalid credentials");
+		throw new AppError(httpStatus.UNAUTHORIZED, "Invalid credentials");
 	}
 
 	const jwtPayload = {
@@ -297,9 +300,59 @@ const getMe = async (user: IRequestUser) => {
 	return isUserExists;
 };
 
+const refreshToken = async (token: string) => {
+	const verifiedRefreshToken = jwtUtils.verifyToken(
+		token,
+		config.jwt_refresh_secret,
+	);
+
+	if (!verifiedRefreshToken.success || !verifiedRefreshToken.data) {
+		throw new AppError(httpStatus.UNAUTHORIZED,
+			config.node_env === "development"
+				? verifiedRefreshToken.error
+				: "Invalid refresh token",
+		);
+	}
+
+	const data = verifiedRefreshToken.data as JwtPayload;
+
+	const user = await prisma.user.findUnique({
+		where: { id: data.userId },
+	});
+
+	if (!user || user.status !== UserStatus.ACTIVE) {
+		throw new AppError(httpStatus.NOT_FOUND, "User is inactive or not found");
+	}
+
+	const jwtPayload = {
+		userId: user.id,
+		name: user.name,
+		email: user.email,
+		role: user.role,
+	};
+
+	const accessToken = jwtUtils.createToken(
+		jwtPayload,
+		config.jwt_access_secret,
+		config.jwt_access_expires_in as SignOptions,
+	);
+
+	const refreshToken = jwtUtils.createToken(
+		jwtPayload,
+		config.jwt_refresh_secret,
+		config.jwt_refresh_expires_in as SignOptions,
+	);
+
+	return {
+		accessToken,
+		refreshToken,
+	};
+};
+
 export const authService = {
 	createAccount,
 	generateOTP,
 	loginUser,
-	getMe
+	getMe,
+	refreshToken
 };
