@@ -1,0 +1,20 @@
+model Refund {
+  id                  String          @id @default(uuid())
+
+  paymentId           String
+  payment             Payment         @relation(fields: [paymentId], references: [id])
+
+  amount              Decimal         @db.Decimal(12, 2)
+
+  reason              String?
+
+  providerRefundId    String?
+
+  status              PaymentStatus   @default(PENDING)
+
+  createdAt            DateTime        @default(now())
+  processedAt         DateTime?
+
+  @@index([paymentId])
+  @@map("refunds")
+}

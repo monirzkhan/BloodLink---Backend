@@ -1,0 +1,42 @@
+model Donation {
+  id                  String           @id @default(uuid())
+
+  donationNumber      String           @unique
+
+  requestId           String
+  request             BloodRequest     @relation(fields: [requestId], references: [id])
+
+  donorId             String
+  donor               User             @relation(fields: [donorId], references: [id])
+
+  hospitalId          String?
+  hospital            HospitalProfile? @relation(fields: [hospitalId], references: [id])
+
+  appointmentId       String           @unique
+  appointment         Appointment      @relation(fields: [appointmentId], references: [id])
+
+  bloodGroup          BloodGroup
+  component           BloodComponent
+
+  units               Int              @default(1)
+
+  screeningStatus     ScreeningStatus  @default(PENDING)
+
+  donationStatus      DonationStatus   @default(SCHEDULED)
+
+  donatedAt           DateTime?
+
+  notes               String?
+
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+
+  @@index([donorId])
+  @@index([requestId])
+  @@index([hospitalId])
+  @@index([appointmentId])
+  @@index([donationStatus])
+  @@index([screeningStatus])
+  @@map("donations")
+}

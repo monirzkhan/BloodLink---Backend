@@ -20,22 +20,23 @@ model User {
   patientProfile  PatientProfile?
   hospitalProfile HospitalProfile?
 
-  // createdRequests BloodRequest[] @relation("RequestCreator")
-  // patientRequests BloodRequest[] @relation("PatientRequests")
-  // callerRequests  BloodRequest[] @relation("CallerRequests")
+  createdRequests BloodRequest[] @relation("RequestCreator")
+  patientRequests BloodRequest[] @relation("PatientRequests")
+  callerRequests  BloodRequest[] @relation("CallerRequests")
 
-  // donorOffers  BloodRequestDonor[]
-  // reservations DonorReservation[]
+  donorOffers  BloodRequestDonor[]
+  reservations DonorReservation[]
 
-  // appointments Appointment[]
-  // donations    Donation[]
+  appointments Appointment[]
+  donations    Donation[]
 
-  // payments Payment[]
+  payments Payment[]
 
-  // notifications Notification[]
+  notifications Notification[]
 
-  // auditLogs AuditLog[]
+  auditLogs AuditLog[]
 
   @@index([role])
   @@index([status])
+  @@map("users")
 }

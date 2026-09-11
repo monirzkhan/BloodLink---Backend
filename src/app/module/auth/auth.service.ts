@@ -24,9 +24,11 @@ import { AppError } from "../../utility/AppError";
 import httpStatus from "http-status";
 import { TokenPayload } from "google-auth-library";
 import { googleClient } from "../../lib/googleAuth";
+import { getCoordinates } from "../../utility/coordinates";
 
 const generateOTP = async (payload: ICreateAccountPayload) => {
-	const { name, password, phone, donorProfile } = payload;
+	const { name, password, phone,role, donorProfile } = payload;
+	
 	const email = payload.email.trim().toLowerCase();
 
 	const isUserExist = await prisma.user.findUnique({
@@ -35,7 +37,7 @@ const generateOTP = async (payload: ICreateAccountPayload) => {
 		},
 	});
 	if (isUserExist) {
-		throw new Error("User Already Exist");
+		throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist");
 	}
 
 	const hashedPassword = await bcrypt.hash(
@@ -58,9 +60,8 @@ const generateOTP = async (payload: ICreateAccountPayload) => {
 		email,
 		password: hashedPassword,
 		phone,
-		donorProfile: {
-			bloodGroup: donorProfile?.bloodGroup,
-		},
+		role,
+		donorProfile
 	};
 	const redisDataKey = `User-Registration-Data:${email}`;
 
@@ -86,7 +87,7 @@ const generateOTP = async (payload: ICreateAccountPayload) => {
 	await transporter.sendMail({
 		from: `"BloodLink" <${config.smtp_sender}>`,
 		to: email,
-		subject: "Verify Your Email for Registration",
+		subject: "Verify Your Email",
 		html,
 	});
 };
@@ -102,7 +103,7 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 	});
 
 	if (isUserExist?.status === "BLOCKED") {
-		throw new Error("User is Blocked");
+		throw new AppError(httpStatus.FORBIDDEN, "User is Blocked");
 	}
 	if (isUserExist?.emailVerified) {
 		throw new AppError(httpStatus.BAD_REQUEST, "User is already verified");
@@ -131,6 +132,10 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 	const userDataPayload: IRedisRegistrationPayload =
 		JSON.parse(redisDataPayload);
 
+	const address = `${userDataPayload.donorProfile.area}, ${userDataPayload.donorProfile.district}, Bangladesh`;
+
+	const coordinates = await getCoordinates(address);
+
 	const createdUser = await prisma.user.create({
 		data: {
 			name: userDataPayload.name,
@@ -139,9 +144,19 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 			phone: userDataPayload.phone,
 			status: UserStatus.ACTIVE,
 			emailVerified: true,
+			role: userDataPayload.role,
 			donorProfile: {
 				create: {
 					bloodGroup: userDataPayload.donorProfile.bloodGroup,
+					lastDonationDate: userDataPayload.donorProfile.lastDonationDate,
+					dateOfBirth: userDataPayload.donorProfile.dateOfBirth,
+					gender: userDataPayload.donorProfile.gender,
+					division: userDataPayload.donorProfile.division,
+					district: userDataPayload.donorProfile.district,
+					area: userDataPayload.donorProfile.area,
+					latitude: coordinates.latitude,
+					longitude: coordinates.longitude,
+					totalDonations: userDataPayload.donorProfile.totalDonations,
 				},
 			},
 		},
@@ -208,7 +223,7 @@ const loginUser = async (payload: ILoginUserPayload, ipAddress: string) => {
 	});
 
 	if (!user) {
-		throw new Error("User not found");
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
 	}
 
 	if (user.status === UserStatus.BLOCKED) {
@@ -299,7 +314,7 @@ const getMe = async (user: IRequestUser) => {
 	});
 
 	if (!isUserExists) {
-		throw new Error("User not found");
+		throw new AppError(httpStatus.NOT_FOUND,"User not found");
 	}
 
 	return isUserExists;

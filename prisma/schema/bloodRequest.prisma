@@ -1,0 +1,73 @@
+model BloodRequest {
+  id                  String              @id @default(uuid())
+
+  requestNumber       String              @unique
+
+  // Who created the request
+  createdById          String
+  createdBy            User                @relation("RequestCreator", fields: [createdById], references: [id])
+
+  // Patient
+  patientId            String?
+  patient              User?              @relation("PatientRequests", fields: [patientId], references: [id])
+
+  // Caller
+  callerId             String?
+  caller               User?              @relation("CallerRequests", fields: [callerId], references: [id])
+
+  // Hospital
+  hospitalId           String?
+  hospital             HospitalProfile?   @relation(fields: [hospitalId], references: [id])
+
+  bloodGroup           BloodGroup
+  component            BloodComponent     @default(WHOLE_BLOOD)
+
+  unitsRequired        Int
+  unitsFulfilled       Int                @default(0)
+
+  urgency              RequestUrgency     @default(URGENT)
+
+  requiredDate         DateTime
+  requiredTime         DateTime?
+
+  division             String?
+  district             String?
+  area                 String?
+  address              String?
+
+  latitude             Decimal?            @db.Decimal(10, 7)
+  longitude            Decimal?            @db.Decimal(10, 7)
+
+  contactName          String?
+  contactPhone         String?
+
+  reason               String?
+  notes                String?
+
+  status               BloodRequestStatus  @default(PENDING_VERIFICATION)
+
+  verificationStatus  VerificationStatus  @default(PENDING)
+  verifiedById         String?
+  verifiedAt           DateTime?
+  rejectionReason      String?
+
+  expiresAt             DateTime?
+
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  donors                BloodRequestDonor[]
+  reservations          DonorReservation[]
+  payments              Payment[]
+  appointments          Appointment[]
+  donations             Donation[]
+  notifications         Notification[]
+
+
+  @@index([bloodGroup])
+  @@index([status])
+  @@index([urgency])
+  @@index([requiredDate])
+  @@index([district])
+  @@map("blood_requests")
+}

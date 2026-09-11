@@ -30,4 +30,5 @@ model DonorProfile {
   @@index([availability])
   @@index([district])
   @@index([latitude, longitude])
+  @@map("donor_profiles")
 }

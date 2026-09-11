@@ -1,0 +1,37 @@
+model Appointment {
+  id                  String             @id @default(uuid())
+
+  appointmentNumber   String             @unique
+
+  requestId           String
+  request             BloodRequest       @relation(fields: [requestId], references: [id])
+
+  donorId             String
+  donor               User               @relation(fields: [donorId], references: [id])
+
+  hospitalId          String?
+  hospital            HospitalProfile?   @relation(fields: [hospitalId], references: [id])
+
+  reservationId       String?            @unique
+  reservation         DonorReservation?  @relation(fields: [reservationId], references: [id])
+
+  appointmentDate     DateTime
+
+  status              AppointmentStatus  @default(SCHEDULED)
+
+  screeningStatus     ScreeningStatus    @default(PENDING)
+
+  screeningNotes      String?
+
+  confirmedAt         DateTime?
+  completedAt         DateTime?
+
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  donation             Donation?
+
+  @@index([donorId])
+  @@index([requestId])
+  @@map("appointments")
+}

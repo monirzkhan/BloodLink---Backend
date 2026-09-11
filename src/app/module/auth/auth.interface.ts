@@ -5,8 +5,12 @@ export interface ICreateAccountPayload {
 	email: string;
 	password: string;
 	phone: string;
+	role: UserRole;
 	donorProfile: {
 		bloodGroup: BloodGroup;
+		division?: string;
+		district?: string;
+		area?: string;
 	};
 }
 export interface IRedisRegistrationPayload {
@@ -14,8 +18,16 @@ export interface IRedisRegistrationPayload {
 	email: string;
 	password: string;
 	phone: string;
+	role: UserRole;
 	donorProfile: {
 		bloodGroup: BloodGroup;
+		lastDonationDate?: string;
+		dateOfBirth?: string;
+		gender?: string;
+		division?: string;
+		district?: string;
+		area?: string;
+		totalDonations?: number;
 	};
 }
 export interface IVerifyEmailOTPPayload {

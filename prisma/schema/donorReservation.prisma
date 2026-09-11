@@ -1,0 +1,28 @@
+model DonorReservation {
+  id                  String              @id @default(uuid())
+
+  requestId           String
+  request             BloodRequest        @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  donorId             String
+  donor               User                @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  donorOfferId        String              @unique
+  donorOffer          BloodRequestDonor   @relation(fields: [donorOfferId], references: [id], onDelete: Cascade)
+
+  status              ReservationStatus   @default(RESERVED)
+
+  reservedAt          DateTime            @default(now())
+  expiresAt           DateTime?
+  releasedAt          DateTime?
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  appointment         Appointment?
+
+  @@index([donorId])
+  @@index([requestId])
+  @@index([status])
+  @@map("donor_reservations")
+}

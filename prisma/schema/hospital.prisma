@@ -24,7 +24,11 @@ model HospitalProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  //   bloodRequests       BloodRequest[]
-  //   appointments        Appointment[]
-  //   donations           Donation[]
+  bloodRequests       BloodRequest[]
+  appointments        Appointment[]
+  donations           Donation[]
+
+  @@index([district])
+  @@index([latitude, longitude])
+  @@map("hospital_profiles")
 }

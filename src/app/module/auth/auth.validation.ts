@@ -1,4 +1,79 @@
 import z from "zod";
+import { UserRole } from "../../../generated/prisma/enums";
+
+const donorProfileSchema = z.object({
+  bloodGroup: z.enum([
+    "A_POSITIVE",
+    "A_NEGATIVE",
+    "B_POSITIVE",
+    "B_NEGATIVE",
+    "AB_POSITIVE",
+    "AB_NEGATIVE",
+    "O_POSITIVE",
+    "O_NEGATIVE",
+  ]),
+  lastDonationDate: z.string().optional(),
+
+  dateOfBirth: z.string().optional(),
+
+  gender: z.string().optional(),
+
+  division: z.string().optional(),
+
+  district: z.string().optional(),
+
+  area: z.string().optional(),
+
+  latitude: z.number().optional(),
+
+  longitude: z.number().optional(),
+  totalDonations: z.number().optional()
+});
+
+const patientProfileSchema = z.object({
+  dateOfBirth: z.string().optional(),
+
+  gender: z.string().optional(),
+
+  bloodGroup: z
+    .enum([
+      "A_POSITIVE",
+      "A_NEGATIVE",
+      "B_POSITIVE",
+      "B_NEGATIVE",
+      "AB_POSITIVE",
+      "AB_NEGATIVE",
+      "O_POSITIVE",
+      "O_NEGATIVE",
+    ])
+    .optional(),
+
+  emergencyContact: z.string().optional(),
+
+  emergencyPhone: z.string().optional(),
+});
+
+const hospitalProfileSchema = z.object({
+  hospitalName: z.string().min(2, "Hospital name is required"),
+
+  registrationNumber: z.string().optional(),
+
+  phone: z.string().optional(),
+
+  email: z.string().email().optional(),
+
+  division: z.string().optional(),
+
+  district: z.string().optional(),
+
+  area: z.string().optional(),
+
+  address: z.string().optional(),
+
+  latitude: z.number().optional(),
+
+  longitude: z.number().optional(),
+});
 
 const UserRegistrationZodSchema = z.object({
 	name: z
@@ -16,16 +91,10 @@ const UserRegistrationZodSchema = z.object({
 	phone: z
 		.string()
 		.length(11, "Mobile number must be at least 11 characters long"),
-	donorProfile: z
-		.object({
-			bloodGroup: z
-				.string()
-				.min(
-					10,
-					"Blood Group is required, Example: A_POSITIVE, B_Negative, O_Positive etc",
-				),
-		})
-		.optional(),
+	role:z.enum(UserRole, "Role must be either DONOR, PATIENT or HOSPITAL"),
+	donorProfile: donorProfileSchema.optional(),
+	patientProfile: patientProfileSchema.optional(),
+	hospitalProfile: hospitalProfileSchema.optional(),
 });
 
 const userLoginZodSchema = z.object({
