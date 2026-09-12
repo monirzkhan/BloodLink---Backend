@@ -9,6 +9,7 @@ import cookieParser from "cookie-parser";
 import httpStatus from "http-status";
 import { authRoute } from "./app/module/auth/auth.route";
 import { paymentRoute } from "./app/module/payment/payment.route";
+import { userRoute } from "./app/module/user/user.route";
 
 const app: Application = express();
 
@@ -28,6 +29,7 @@ app.use(cookieParser());
 
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/payment", paymentRoute);
+app.use("/api/v1/users", userRoute);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {
