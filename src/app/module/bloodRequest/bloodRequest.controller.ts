@@ -30,8 +30,34 @@ const createBloodRequest = catchAsync(
         })
 }
 );
+const verifyBloodRequestByAdmin = catchAsync(
+    async (req: Request, res: Response) => {
+
+        const userId= req.user?.userId;
+        const id= req.params.id
+        const payload= req.body
+
+        if (!userId) {
+			throw new AppError(
+				httpStatus.UNAUTHORIZED,
+				"User authentication information is missing"
+			);
+		}
+
+	const result =
+		await bloodRequestService.verifyBloodRequestByAdmin(userId, id as string, payload);
+
+        sendResponse(res,{
+            statusCode: httpStatus.CREATED,
+            success: true,
+            message:"Blood request Verified successfully and is waiting for Donor Match",
+            data: result
+        })
+}
+);
 
 
 export const bloodRequestController = {
 	createBloodRequest,
+    verifyBloodRequestByAdmin
 };

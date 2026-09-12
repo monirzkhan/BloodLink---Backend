@@ -1,3 +1,4 @@
+import path from "node:path";
 import {
 	BloodRequestStatus,
 	UserRole,
@@ -17,6 +18,9 @@ import {
 } from "./bloodRequest.utils";
 
 import httpStatus from "http-status";
+import config from "../../config";
+import { transporter } from "../../lib/nodemailer";
+import ejs from "ejs";
 
 const ALLOWED_ROLES: UserRole[] = [
 	UserRole.DONOR,
@@ -244,11 +248,109 @@ const createBloodRequest = async (
 			},
 		});
 
+  //send Email with OTP
+	const templatePath = path.join(
+		process.cwd(),
+		"/src/app/templates/blood-request/new-blood.request.ejs",
+	);
+	const templateData = {
+	requestNumber: requestNumber,
+
+	bloodGroup: requestData.bloodGroup,
+
+	component: requestData.component,
+
+	unitsRequired: requestData.unitsRequired,
+
+	urgency: requestData.urgency,
+
+	requiredDate: requestData.requiredDate.toLocaleDateString(
+		"en-BD",
+		{
+			timeZone: "Asia/Dhaka",
+		}
+	),
+
+	requiredTime: requestData.requiredTime
+		? requestData.requiredTime.toLocaleTimeString(
+				"en-BD",
+				{
+					timeZone: "Asia/Dhaka",
+					hour: "2-digit",
+					minute: "2-digit",
+				}
+		  )
+		: null,
+
+	requesterName: user.name,
+
+	requesterEmail: user.email,
+
+	requesterPhone: user.phone,
+
+	requesterRole: user.role,
+
+	division: requestData.division,
+
+	district: requestData.district,
+
+	area: requestData.area,
+
+	address: requestData.address,
+
+	contactName: requestData.contactName,
+
+	contactPhone: requestData.contactPhone,
+
+	reason: requestData.reason,
+
+	notes: requestData.notes,
+
+	adminRequestUrl:
+		`${config.frontend_url}/admin/blood-requests/${requestData.id}`,
+};
+
+	const html = await ejs.renderFile(templatePath, templateData);
+  const subject =
+	`🩸 New Blood Request ${requestNumber} — Verification Required`;
+
+	await transporter.sendMail({
+		from: `"BloodLink" <${config.smtp_sender}>`,
+		to: "mmonirz.dev@gmail.com",// admin email will set
+		subject,
+		html,
+	});
 
 	return createdRequest;
+
 };
+
+const verifyBloodRequestByAdmin=async(userId: string, id:string, payload: any)=>{
+
+  const isBloodRequestExists= await prisma.bloodRequest.findUnique({
+    where:{
+      id,
+      
+    }
+  })
+  if(!isBloodRequestExists){
+    throw new AppError(httpStatus.NOT_FOUND, "Blood Request Not Found")
+  }
+
+  const verifyRequest= await prisma.bloodRequest.update({
+    where:{
+      id
+    },
+    data:{
+      ...payload
+    }
+    
+  })
+  return verifyRequest
+}
 
 
 export const bloodRequestService = {
 	createBloodRequest,
+  verifyBloodRequestByAdmin
 };

@@ -33,6 +33,7 @@ model User {
   payments Payment[]
 
   notifications Notification[]
+  pushSubscriptions PushSubscription[]
 
   auditLogs AuditLog[]
 

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>New Blood Request - BloodLink</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f8;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #333333;
+        }
+
+        .wrapper {
+            width: 100%;
+            padding: 30px 0;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .header {
+            background: #b91c1c;
+            padding: 28px 30px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .header-text {
+            margin-top: 8px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 35px 30px;
+        }
+
+        .alert {
+            background: #fff7ed;
+            border-left: 5px solid #f97316;
+            padding: 15px 18px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+        }
+
+        .alert-title {
+            margin: 0 0 5px;
+            color: #c2410c;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .alert-text {
+            margin: 0;
+            font-size: 14px;
+            color: #7c2d12;
+            line-height: 1.5;
+        }
+
+        h2 {
+            color: #222222;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .intro {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #555555;
+        }
+
+        .request-number {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 14px;
+            border-radius: 8px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .request-number-label {
+            display: block;
+            font-size: 12px;
+            color: #777777;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .request-number-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #b91c1c;
+        }
+
+        .section {
+            margin-top: 28px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: bold;
+            color: #222222;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table tr {
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-table td {
+            padding: 11px 5px;
+            font-size: 14px;
+            vertical-align: top;
+        }
+
+        .label {
+            width: 38%;
+            color: #777777;
+            font-weight: 600;
+        }
+
+        .value {
+            color: #333333;
+        }
+
+        .blood-group {
+            display: inline-block;
+            background: #b91c1c;
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .urgency {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .action {
+            text-align: center;
+            margin: 35px 0 10px;
+        }
+
+        .button {
+            display: inline-block;
+            background: #b91c1c;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 7px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .note {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 7px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #64748b;
+        }
+
+        .footer {
+            background: #f8fafc;
+            padding: 22px 30px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .footer p {
+            margin: 4px 0;
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .footer strong {
+            color: #b91c1c;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .wrapper {
+                padding: 10px 0;
+            }
+
+            .container {
+                width: 95%;
+            }
+
+            .content {
+                padding: 25px 20px;
+            }
+
+            .header {
+                padding: 24px 20px;
+            }
+
+            .info-table td {
+                padding: 9px 3px;
+            }
+
+            .label {
+                width: 42%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+    <div class="container">
+
+        <!-- Header -->
+        <div class="header">
+
+            <div class="logo">
+                🩸 BloodLink
+            </div>
+
+            <div class="header-text">
+                Blood Donation & Emergency Response Platform
+            </div>
+
+        </div>
+
+
+        <!-- Content -->
+        <div class="content">
+
+            <div class="alert">
+
+                <p class="alert-title">
+                    ⚠️ New Blood Request Requires Verification
+                </p>
+
+                <p class="alert-text">
+                    A new blood request has been submitted and is waiting
+                    for admin verification.
+                </p>
+
+            </div>
+
+
+            <h2>
+                Hello Admin,
+            </h2>
+
+            <p class="intro">
+
+                A new blood request has been created on
+                <strong>BloodLink</strong>.
+
+                Please review the request details and verify it
+                as soon as possible.
+
+            </p>
+
+
+            <!-- Request Number -->
+            <div class="request-number">
+
+                <span class="request-number-label">
+                    Request Number
+                </span>
+
+                <span class="request-number-value">
+                    <%= requestNumber %>
+                </span>
+
+            </div>
+
+
+            <!-- Blood Information -->
+            <div class="section">
+
+                <div class="section-title">
+                    🩸 Blood Requirement
+                </div>
+
+                <table class="info-table">
+
+                    <tr>
+                        <td class="label">
+                            Blood Group
+                        </td>
+
+                        <td class="value">
+                            <span class="blood-group">
+                                <%= bloodGroup %>
+                            </span>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td class="label">
+                            Component
+                        </td>
+
+                        <td class="value">
+                            <%= component %>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td class="label">
+                            Units Required
+                        </td>
+
+                        <td class="value">
+                            <strong>
+                                <%= unitsRequired %> unit(s)
+                            </strong>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td class="label">
+                            Urgency
+                        </td>
+
+                        <td class="value">
+                            <span class="urgency">
+                                <%= urgency %>
+                            </span>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td class="label">
+                            Required Date
+                        </td>
+
+                        <td class="value">
+                            <%= requiredDate %>
+                        </td>
+                    </tr>
+
+
+                    <% if (requiredTime) { %>
+
+                    <tr>
+                        <td class="label">
+                            Required Time
+                        </td>
+
+                        <td class="value">
+                            <%= requiredTime %>
+                        </td>
+                    </tr>
+
+                    <% } %>
+
+                </table>
+
+            </div>
+
+
+            <!-- Requester Information -->
+            <div class="section">
+
+                <div class="section-title">
+                    👤 Requester Information
+                </div>
+
+                <table class="info-table">
+
+                    <tr>
+                        <td class="label">
+                            Requester Name
+                        </td>
+
+                        <td class="value">
+                            <%= requesterName %>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td class="label">
+                            Requester Email
+                        </td>
+
+                        <td class="value">
+                            <%= requesterEmail %>
+                        </td>
+                    </tr>
+
+
+                    <% if (requesterPhone) { %>
+
+                    <tr>
+                        <td class="label">
+                            Phone
+                        </td>
+
+                        <td class="value">
+                            <%= requesterPhone %>
+                        </td>
+                    </tr>
+
+                    <% } %>
+
+
+                    <tr>
+                        <td class="label">
+                            Requester Role
+                        </td>
+
+                        <td class="value">
+                            <%= requesterRole %>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+
+            <!-- Location -->
+            <div class="section">
+
+                <div class="section-title">
+                    📍 Location
+                </div>
+
+                <table class="info-table">
+
+                    <% if (division) { %>
+
+                    <tr>
+                        <td class="label">
+                            Division
+                        </td>
+
+                        <td class="value">
+                            <%= division %>
+                        </td>
+                    </tr>
+
+                    <% } %>
+
+
+                    <% if (district) { %>
+
+                    <tr>
+                        <td class="label">
+                            District
+                        </td>
+
+                        <td class="value">
+                            <%= district %>
+                        </td>
+                    </tr>
+
+                    <% } %>
+
+
+                    <% if (area) { %>
+
+                    <tr>
+                        <td class="label">
+                            Area
+                        </td>
+
+                        <td class="value">
+                            <%= area %>
+                        </td>
+                    </tr>
+
+                    <% } %>
+
+
+                    <% if (address) { %>
+
+                    <tr>
+                        <td class="label">
+                            Address
+                        </td>
+
+                        <td class="value">
+                            <%= address %>
+                        </td>
+                    </tr>
+
+                    <% } %>
+
+                </table>
+
+            </div>
+
+
+            <!-- Contact -->
+            <% if (contactName || contactPhone) { %>
+
+            <div class="section">
+
+                <div class="section-title">
+                    📞 Emergency Contact
+                </div>
+
+                <table class="info-table">
+
+                    <% if (contactName) { %>
+
+                    <tr>
+                        <td class="label">
+                            Contact Name
+                        </td>
+
+                        <td class="value">
+                            <%= contactName %>
+                        </td>
+                    </tr>
+
+                    <% } %>
+
+
+                    <% if (contactPhone) { %>
+
+                    <tr>
+                        <td class="label">
+                            Contact Phone
+                        </td>
+
+                        <td class="value">
+                            <%= contactPhone %>
+                        </td>
+                    </tr>
+
+                    <% } %>
+
+                </table>
+
+            </div>
+
+            <% } %>
+
+
+            <!-- Reason -->
+            <% if (reason) { %>
+
+            <div class="section">
+
+                <div class="section-title">
+                    📋 Reason
+                </div>
+
+                <p class="intro">
+                    <%= reason %>
+                </p>
+
+            </div>
+
+            <% } %>
+
+
+            <!-- Notes -->
+            <% if (notes) { %>
+
+            <div class="note">
+
+                <strong>Additional Notes:</strong>
+
+                <br />
+
+                <%= notes %>
+
+            </div>
+
+            <% } %>
+
+
+            <!-- Status -->
+            <div class="section">
+
+                <div class="section-title">
+                    Request Status
+                </div>
+
+                <span class="status">
+                    PENDING VERIFICATION
+                </span>
+
+            </div>
+
+
+            <!-- Action -->
+            <div class="action">
+
+                <a
+                    href="<%= adminRequestUrl %>"
+                    class="button"
+                >
+                    Review Blood Request
+                </a>
+
+            </div>
+
+
+            <p class="intro" style="font-size: 13px; text-align: center;">
+
+                Please review the request carefully before approving it.
+
+            </p>
+
+        </div>
+
+
+        <!-- Footer -->
+        <div class="footer">
+
+            <p>
+                <strong>BloodLink</strong>
+            </p>
+
+            <p>
+                Connecting blood donors with people in need.
+            </p>
+
+            <p>
+                This is an automated notification. Please do not reply
+                to this email.
+            </p>
+
+            <p>
+                © <%= new Date().getFullYear() %> BloodLink.
+                All rights reserved.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

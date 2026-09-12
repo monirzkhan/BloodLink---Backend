@@ -5,6 +5,7 @@ import {
 } from "../../../generated/prisma/enums";
 
 export interface ICreateBloodRequest {
+  id?: string;
 	patientId?: string;
 	callerId?: string;
 	hospitalId?: string;
