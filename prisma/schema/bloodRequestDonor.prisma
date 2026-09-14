@@ -14,11 +14,13 @@ model BloodRequestDonor {
 
   notifiedAt          DateTime?
   respondedAt         DateTime?
+  expiresAt           DateTime?
 
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
   reservation         DonorReservation?
+  
 
 
   @@unique([requestId, donorId])

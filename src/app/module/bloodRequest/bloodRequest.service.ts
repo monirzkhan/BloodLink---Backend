@@ -2,6 +2,7 @@ import path from "node:path";
 import {
 	BloodRequestStatus,
 	UserRole,
+  VerificationStatus,
 } from "../../../generated/prisma/enums";
 
 import { prisma } from "../../lib/prisma";
@@ -11,6 +12,7 @@ import { getCoordinates } from "../../utility/coordinates";
 
 import {
 	ICreateBloodRequest,
+  IVerifyBloodRequest,
 } from "./bloodRequest.interface";
 
 import {
@@ -21,6 +23,7 @@ import httpStatus from "http-status";
 import config from "../../config";
 import { transporter } from "../../lib/nodemailer";
 import ejs from "ejs";
+import { findAndMatchDonors } from "./bloodRequestDonor.service";
 
 const ALLOWED_ROLES: UserRole[] = [
 	UserRole.DONOR,
@@ -307,7 +310,7 @@ const createBloodRequest = async (
 	notes: requestData.notes,
 
 	adminRequestUrl:
-		`${config.frontend_url}/admin/blood-requests/${requestData.id}`,
+		`${config.frontend_url}/admin/blood-requests/${createdRequest.id}`,
 };
 
 	const html = await ejs.renderFile(templatePath, templateData);
@@ -325,29 +328,101 @@ const createBloodRequest = async (
 
 };
 
-const verifyBloodRequestByAdmin=async(userId: string, id:string, payload: any)=>{
+const verifyBloodRequestByAdmin = async (
+	adminId: string,
+	id: string,
+	payload: IVerifyBloodRequest
+) => {
 
-  const isBloodRequestExists= await prisma.bloodRequest.findUnique({
-    where:{
-      id,
-      
-    }
-  })
-  if(!isBloodRequestExists){
-    throw new AppError(httpStatus.NOT_FOUND, "Blood Request Not Found")
-  }
+	// 1. Verify admin
+	const admin = await prisma.user.findUnique({
+		where: {
+			id: adminId,
+		},
+		select: {
+			id: true,
+			role: true,
+		},
+	});
 
-  const verifyRequest= await prisma.bloodRequest.update({
-    where:{
-      id
-    },
-    data:{
-      ...payload
-    }
-    
-  })
-  return verifyRequest
-}
+	if (!admin) {
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			"Admin not found"
+		);
+	}
+
+	if (
+		admin.role !== UserRole.ADMIN &&
+		admin.role !== UserRole.SUPER_ADMIN
+	) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Only admin can verify blood requests"
+		);
+	}
+
+	// 2. Find request
+	const bloodRequest =
+		await prisma.bloodRequest.findUnique({
+			where: {
+				id,
+			},
+		});
+
+	if (!bloodRequest) {
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			"Blood request not found"
+		);
+	}
+
+	// 3. Check current state
+	if (
+		bloodRequest.status !==
+		BloodRequestStatus.PENDING_VERIFICATION
+	) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"Only pending blood requests can be verified"
+		);
+	}
+
+	// 4. Rejected
+	if (payload.verificationStatus === "REJECTED") {
+
+		return await prisma.bloodRequest.update({
+			where: {
+				id,
+			},
+			data: {
+				verificationStatus: VerificationStatus.REJECTED,
+				status: BloodRequestStatus.REJECTED,
+				rejectionReason:payload.rejectionReason,
+				verifiedById: adminId,
+				verifiedAt: new Date(),
+			},
+		});
+	}
+
+	// 5. Verified
+	const updatedRequest= await prisma.bloodRequest.update({
+		where: {
+			id,
+		},
+		data: {
+			verificationStatus: VerificationStatus.APPROVED,
+			status: BloodRequestStatus.SEARCHING_DONORS,
+			verifiedById: adminId,
+			verifiedAt: new Date(),
+		},
+	});
+
+  // Start donor matching
+  void findAndMatchDonors(updatedRequest.id)
+
+  return updatedRequest
+};
 
 
 export const bloodRequestService = {

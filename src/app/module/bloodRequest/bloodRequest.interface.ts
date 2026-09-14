@@ -36,3 +36,20 @@ export interface ICreateBloodRequest {
 
 	expiresAt?: Date;
 }
+
+export interface IVerifyBloodRequest {
+  verificationStatus: string;
+  rejectionReason?:string
+}
+
+// export interface Candidate  {
+//     donorId: string;
+//     distanceKm: number | null;
+//     matchScore: number;
+// };
+
+export type Candidate = {
+    donorId: string;
+    distanceKm: number | null;
+    matchScore: number;
+};
