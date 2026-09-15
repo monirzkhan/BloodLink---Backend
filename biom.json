@@ -33,6 +33,9 @@
 			"style":{
 				"noNonNullAssertion":"info",
 				"useImportType":"warn"
+			},
+			"a11y":{
+				"useHtmlLang":"info"
 			}
 		},
 		"includes": [

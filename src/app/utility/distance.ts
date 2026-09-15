@@ -4,7 +4,9 @@ export const calculateDistanceKm = (
 	lat2: number,
 	lon2: number,
 ) => {
-	const R = 6371;
+
+	//Haversine formula
+	const R = 6371; // Earth Radius KM
 
 	const dLat =
 		((lat2 - lat1) * Math.PI) / 180;

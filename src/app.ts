@@ -11,6 +11,7 @@ import { authRoute } from "./app/module/auth/auth.route";
 import { paymentRoute } from "./app/module/payment/payment.route";
 import { userRoute } from "./app/module/user/user.route";
 import { bloodRequestRoute } from "./app/module/bloodRequest/bloodRequest.route";
+import { pushNotificationRouter } from "./app/module/pushNotification/pushNotification.route";
 
 const app: Application = express();
 
@@ -32,6 +33,7 @@ app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/payment", paymentRoute);
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/request", bloodRequestRoute);
+app.use("/api/v1/push-notification", pushNotificationRouter);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {

@@ -5,6 +5,11 @@ import  HttpStatus  from "http-status";
 import {  getCompatibleBloodGroups, isEligibleToDonate } from "./bloodRequest.utils";
 import { calculateDistanceKm } from "../../utility/distance";
 import { Candidate } from "./bloodRequest.interface";
+import { sendPushNotificationToUsers } from "../../utility/sendPushNotification";
+import config from "../../config";
+import path from "node:path";
+import { transporter } from "../../lib/nodemailer";
+import ejs from "ejs"
 
 
 
@@ -190,8 +195,7 @@ const donorLimit: Record<RequestUrgency, number> = {
 	NORMAL: 15,
 };
 
-const selectedDonors =
-	candidates.slice(
+const selectedDonors = candidates.slice(
 		0,
 		donorLimit[request.urgency],
 	);
@@ -211,30 +215,260 @@ if (selectedDonors.length === 0) {
 	return [];
 }
 
-await prisma.$transaction([
-	prisma.bloodRequestDonor.createMany({
-		data: selectedDonors.map((donor) => ({
-		requestId: request.id,
-		donorId: donor.donorId,
-		matchScore: donor.matchScore,
-		distanceKm: donor.distanceKm,
-		status: DonorOfferStatus.OFFERED,
-	})),
-	skipDuplicates: true,
-	}),
+// await prisma.$transaction([
+// 	prisma.bloodRequestDonor.createMany({
+// 		data: selectedDonors.map((donor) => ({
+// 		requestId: request.id,
+// 		donorId: donor.donorId,
+// 		matchScore: donor.matchScore,
+// 		distanceKm: donor.distanceKm,
+// 		status: DonorOfferStatus.OFFERED,
+// 	})),
+// 	skipDuplicates: true,
+// 	}),
 
-	prisma.bloodRequest.update({
+// 	prisma.bloodRequest.update({
+// 		where: {
+// 			id: request.id,
+// 		},
+// 		data: {
+//         status:
+//             selectedDonors.length > 0
+//                 ? BloodRequestStatus.DONOR_FOUND
+//                 : BloodRequestStatus.SEARCHING_DONORS,
+//     },
+// 	}),
+
+// ]);
+
+const result = await prisma.$transaction(async (tx) => {
+	const createdOffers: any = [];
+
+	for (const donor of selectedDonors) {
+		const offer = await tx.bloodRequestDonor.upsert({
+			where: {
+				requestId_donorId: {
+					requestId: request.id,
+					donorId: donor.donorId,
+				},
+			},
+			update: {},
+			create: {
+				requestId: request.id,
+				donorId: donor.donorId,
+				matchScore: donor.matchScore,
+				distanceKm: donor.distanceKm,
+				status: DonorOfferStatus.OFFERED,
+			},
+		});
+
+		createdOffers.push(offer);
+	}
+
+	await tx.bloodRequest.update({
 		where: {
 			id: request.id,
 		},
 		data: {
-        status:
-            selectedDonors.length > 0
-                ? BloodRequestStatus.DONOR_FOUND
-                : BloodRequestStatus.SEARCHING_DONORS,
-    },
+			status: BloodRequestStatus.DONOR_FOUND,
+		},
+	});
+
+	return createdOffers;
+});
+
+await prisma.donorReservation.createMany({
+	data: result.map((offer: any) => ({
+		requestId: request.id,
+		donorId: offer.donorId,
+		donorOfferId: offer.id,
+	})),
+	skipDuplicates: true,
+});
+
+	//send Email and SMS
+	const sendFakeSms = async (
+	phone: string,
+	message: string,
+) => {
+	console.log(`
+========================================
+📱 FAKE SMS
+========================================
+To: ${phone}
+
+${message}
+========================================
+`);
+};
+
+// ========================================
+// SEND EMAIL + FAKE SMS
+// ========================================
+
+const notificationResults = await Promise.allSettled(
+	selectedDonors.map(async (candidate) => {
+		try {
+			const donor = await prisma.user.findUnique({
+				where: {
+					id: candidate.donorId,
+				},
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					phone: true,
+				},
+			});
+
+			if (!donor) {
+				console.log(
+					`Donor not found: ${candidate.donorId}`,
+				);
+
+				return;
+			}
+
+			console.log(
+				`Preparing notification for donor: ${donor.name}`,
+			);
+
+			// ========================================
+			// EMAIL
+			// ========================================
+
+			if (donor.email) {
+				const templatePath = path.join(
+					process.cwd(),
+					"src",
+					"app",
+					"templates",
+					"blood-request",
+					"blood-request-donor.ejs",
+				);
+
+				console.log(
+					"Email template:",
+					templatePath,
+				);
+
+				const templateData = {
+					donorName: donor.name,
+					bloodGroup: request.bloodGroup,
+					unitsRequired: request.unitsRequired,
+					urgency: request.urgency,
+					location: request.address,
+
+
+					// Donor opens full request
+				requestUrl: `${config.frontend_url}/blood-requests/${request.id}`,
+
+				// Donor accepts this request
+				acceptUrl: `${config.frontend_url}/blood-requests/${request.id}/accept`,
+
+					requiredDate: request.requiredDate.toLocaleDateString(
+					"en-BD",
+					{
+					timeZone: "Asia/Dhaka",
+					}
+					),
+
+					requiredTime: request.requiredTime
+						? request.requiredTime.toLocaleTimeString(
+								"en-BD",
+								{
+									timeZone: "Asia/Dhaka",
+									hour: "2-digit",
+									minute: "2-digit",
+								},
+							)
+						: null,
+
+				};
+
+				const html = await ejs.renderFile(
+					templatePath,
+					templateData,
+				);
+
+				console.log(
+					`Sending email to: ${donor.email}`,
+				);
+
+				await transporter.sendMail({
+					from: `"BloodLink" <${config.smtp_sender}>`,
+					to: donor.email,
+					subject:
+						`🩸 Blood Link — ${request.bloodGroup} Blood Needed`,
+					html,
+				});
+
+				console.log(
+					`✅ Email sent to ${donor.email}`,
+				);
+			} else {
+				console.log(
+					`⚠️ Donor ${donor.name} has no email`,
+				);
+			}
+
+			// ========================================
+			// FAKE SMS
+			// ========================================
+
+			if (donor.phone) {
+				await sendFakeSms(
+					donor.phone,
+					`Blood Link: ${request.bloodGroup} blood is urgently needed.`,
+				);
+			} else {
+				console.log(
+					`⚠️ Donor ${donor.name} has no phone number`,
+				);
+			}
+		} catch (error) {
+			console.error(
+				`❌ Notification failed for donor ${candidate.donorId}`,
+				error,
+			);
+		}
 	}),
-]);
+);
+
+console.log(
+	"Notification results:",
+	notificationResults,
+);
+	
+
+//send Push Notification
+	const donorIds = selectedDonors.map(
+	(donor) => donor.donorId,
+);
+
+try {
+		await sendPushNotificationToUsers(
+	donorIds,
+	{
+		title: "🩸 Urgent Blood Request",
+		body: `${request.bloodGroup} blood is urgently needed near you.`,
+		icon: "/src/app/icon/bloodLink-log.png", //frontend icon path/link
+		url: `${config.frontend_url}/blood-requests/${request.id}`, //frontend URL
+		data: {
+			type: "BLOOD_REQUEST",
+			bloodRequestId: request.id,
+		},
+	},
+);
+} catch (error) {
+	console.error(
+		"Failed to send donor push notifications:",
+		error,
+	);
+	
+}
+
+
 
 return selectedDonors
 
