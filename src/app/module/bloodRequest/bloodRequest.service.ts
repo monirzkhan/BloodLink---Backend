@@ -419,7 +419,12 @@ const verifyBloodRequestByAdmin = async (
 	});
 
   // Start donor matching
-  void findAndMatchDonors(updatedRequest.id)
+  void findAndMatchDonors(updatedRequest.id).catch((error) => {
+    console.error(
+        `Donor matching failed for request ${updatedRequest.id}:`,
+        error,
+    );
+});
 
   return updatedRequest
 };

@@ -1,7 +1,12 @@
+import { HttpStatusCode } from "axios";
+import app from "../../../app";
 import { BloodGroup } from "../../../generated/prisma/enums";
 import { UserWhereInput } from "../../../generated/prisma/models";
 import { IQuery } from "../../interface";
 import { prisma } from "../../lib/prisma";
+import { AppError } from "../../utility/AppError";
+import { IUserProfileUpdatePayload } from "./user.interface";
+import { tr } from "zod/locales";
 
 const getAllUsers = async (query: IQuery) => {
 	// ================================
@@ -144,7 +149,7 @@ const getAllUsers = async (query: IQuery) => {
 			donorProfile: {
 				is: {
 					bloodGroup: {
-						equals: query.bloodGroup as any,
+						equals: query.bloodGroup as BloodGroup,
 					},
 				},
 			},
@@ -194,6 +199,132 @@ const getAllUsers = async (query: IQuery) => {
 	return users;
 };
 
+const updateProfile = async (
+	userId: string,
+	payload: IUserProfileUpdatePayload,
+) => {
+	// ============================================
+	// Find User
+	// ============================================
+
+	const user = await prisma.user.findUnique({
+		where: {
+			id: userId,
+		},
+		include: {
+			donorProfile: true,
+			patientProfile: true,
+			hospitalProfile: true,
+		},
+	});
+
+	if (!user) {
+		throw new AppError(
+			HttpStatusCode.NotFound,
+			"User not found",
+		);
+	}
+
+	// ============================================
+	// Check User Status
+	// ============================================
+
+	if (user.status === "BLOCKED") {
+		throw new AppError(
+			HttpStatusCode.Conflict,
+			"User is blocked",
+		);
+	}
+
+	// ============================================
+	// Separate User & Profile Data
+	// ============================================
+
+	const {
+		donorProfile,
+		patientProfile,
+		hospitalProfile,
+		...userData
+	} = payload;
+
+	// ============================================
+	// Transaction
+	// ============================================
+
+	const updatedUser = await prisma.$transaction(async (tx) => {
+		// --------------------------------------------
+		// Update User
+		// --------------------------------------------
+
+		await tx.user.update({
+			where: {
+				id: userId,
+			},
+			data: userData,
+		});
+
+		// --------------------------------------------
+		// Update Donor Profile
+		// --------------------------------------------
+
+		if (donorProfile && user.donorProfile) {
+			await tx.donorProfile.update({
+				where: {
+					userId: userId,
+				},
+				data: donorProfile,
+			});
+		}
+
+		// --------------------------------------------
+		// Update Patient Profile
+		// --------------------------------------------
+
+		if (patientProfile && user.patientProfile) {
+			await tx.patientProfile.update({
+				where: {
+					userId: userId,
+				},
+				data: patientProfile,
+			});
+		}
+
+		// --------------------------------------------
+		// Update Hospital Profile
+		// --------------------------------------------
+
+		if (hospitalProfile && user.hospitalProfile) {
+			await tx.hospitalProfile.update({
+				where: {
+					userId: userId,
+				},
+				data: hospitalProfile,
+			});
+		}
+
+		// --------------------------------------------
+		// Get Updated User
+		// --------------------------------------------
+
+		return tx.user.findUnique({
+			where: {
+				id: userId,
+			},
+			include: {
+				donorProfile: true,
+				patientProfile: true,
+				hospitalProfile: true,
+			},
+			omit: {
+				password: true,
+			},
+		});
+	});
+
+	return updatedUser;
+};
+
 export const userService = {
 	getAllUsers,
+	updateProfile
 };
