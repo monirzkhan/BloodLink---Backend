@@ -1,4 +1,3 @@
-
 import { prisma } from "../lib/prisma";
 import webpush from "../lib/pushNotification";
 
@@ -56,8 +55,6 @@ export const sendPushNotificationToUsers = async (
 	payload: IPushPayload,
 ) => {
 	await Promise.allSettled(
-		userIds.map((userId) =>
-			sendPushNotification(userId, payload),
-		),
+		userIds.map((userId) => sendPushNotification(userId, payload)),
 	);
 };

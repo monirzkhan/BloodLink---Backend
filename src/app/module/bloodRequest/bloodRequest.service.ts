@@ -2,7 +2,7 @@ import path from "node:path";
 import {
 	BloodRequestStatus,
 	UserRole,
-  VerificationStatus,
+	VerificationStatus,
 } from "../../../generated/prisma/enums";
 
 import { prisma } from "../../lib/prisma";
@@ -10,14 +10,12 @@ import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utility/AppError";
 import { getCoordinates } from "../../utility/coordinates";
 
-import {
+import type {
 	ICreateBloodRequest,
-  IVerifyBloodRequest,
+	IVerifyBloodRequest,
 } from "./bloodRequest.interface";
 
-import {
-	generateRequestNumber,
-} from "./bloodRequest.utils";
+import { generateRequestNumber } from "./bloodRequest.utils";
 
 import httpStatus from "http-status";
 import config from "../../config";
@@ -35,9 +33,8 @@ const ALLOWED_ROLES: UserRole[] = [
 const createBloodRequest = async (
 	userId: string,
 	userRole: UserRole,
-	requestData: ICreateBloodRequest
+	requestData: ICreateBloodRequest,
 ) => {
-
 	// --------------------------------
 	// 1. Check creator role
 	// --------------------------------
@@ -45,10 +42,9 @@ const createBloodRequest = async (
 	if (!ALLOWED_ROLES.includes(userRole)) {
 		throw new AppError(
 			httpStatus.FORBIDDEN,
-			"Only donor, caller, patient or hospital can create a blood request"
+			"Only donor, caller, patient or hospital can create a blood request",
 		);
 	}
-
 
 	// --------------------------------
 	// 2. Get authenticated user
@@ -61,12 +57,8 @@ const createBloodRequest = async (
 	});
 
 	if (!user) {
-		throw new AppError(
-			httpStatus.NOT_FOUND,
-			"User not found"
-		);
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
 	}
-
 
 	// --------------------------------
 	// 3. Generate request number
@@ -74,79 +66,55 @@ const createBloodRequest = async (
 
 	const requestNumber = generateRequestNumber();
 
-
 	// --------------------------------
 	// 4. Validate role-specific data
 	// --------------------------------
 
 	if (userRole === UserRole.PATIENT) {
-
-		if (
-			requestData.patientId &&
-			requestData.patientId !== userId
-		) {
+		if (requestData.patientId && requestData.patientId !== userId) {
 			throw new AppError(
 				httpStatus.FORBIDDEN,
-				"Patient can only create request for himself"
+				"Patient can only create request for himself",
 			);
 		}
 	}
 
 	if (userRole === UserRole.CALLER) {
-
-		if (
-			requestData.callerId &&
-			requestData.callerId !== userId
-		) {
+		if (requestData.callerId && requestData.callerId !== userId) {
 			throw new AppError(
 				httpStatus.FORBIDDEN,
-				"Caller can only create request as himself"
+				"Caller can only create request as himself",
 			);
 		}
 	}
-
 
 	// --------------------------------
 	// 5. Set creator relationship
 	// --------------------------------
 
 	const patientId =
-		userRole === UserRole.PATIENT
-			? userId
-			: requestData.patientId;
+		userRole === UserRole.PATIENT ? userId : requestData.patientId;
 
-	const callerId =
-		userRole === UserRole.CALLER
-			? userId
-			: requestData.callerId;
+	const callerId = userRole === UserRole.CALLER ? userId : requestData.callerId;
 
 	const hospitalId =
-		userRole === UserRole.HOSPITAL
-			? userId
-			: requestData.hospitalId;
-
+		userRole === UserRole.HOSPITAL ? userId : requestData.hospitalId;
 
 	// --------------------------------
 	// 6. Hospital validation
 	// --------------------------------
 
 	if (userRole === UserRole.HOSPITAL) {
-
-		const hospitalProfile =
-			await prisma.hospitalProfile.findUnique({
-				where: {
-					id: userId,
-				},
-			});
+		const hospitalProfile = await prisma.hospitalProfile.findUnique({
+			where: {
+				id: userId,
+			},
+		});
 
 		if (!hospitalProfile) {
-			throw new AppError(
-				httpStatus.BAD_REQUEST,
-				"Hospital profile not found"
-			);
+			throw new AppError(httpStatus.BAD_REQUEST, "Hospital profile not found");
 		}
 	}
-
 
 	// --------------------------------
 	// 7. Validate units
@@ -155,185 +123,167 @@ const createBloodRequest = async (
 	if (requestData.unitsRequired <= 0) {
 		throw new AppError(
 			httpStatus.BAD_REQUEST,
-			"Units required must be greater than zero"
+			"Units required must be greater than zero",
 		);
 	}
 
-  // --------------------------------
+	// --------------------------------
 	// 8. Find Coordinates for the request address
 	// --------------------------------
 
+	const address = `${requestData.area}, ${requestData.district}, Bangladesh`;
+	const coordinates = await getCoordinates(address);
 
-  const address = `${requestData.area}, ${requestData.district}, ${requestData.division}, Bangladesh`;
-  const coordinates= await getCoordinates(address);
+	// --------------------------------
+	//  Date and Time Validation
+	// --------------------------------
+
+	const createdAt = new Date();
+
+	const requiredDateTime = new Date(requestData.requiredDate);
+
+	const [hours, minutes] = requestData.requiredTime.split(":").map(Number);
+
+	requiredDateTime.setHours(hours, minutes, 0, 0);
+
+	if (requiredDateTime <= createdAt) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"Required date and time must be after the blood request creation time",
+		);
+	}
 
 	// --------------------------------
 	// 9. Create request
 	// --------------------------------
 
-	const createdRequest =
-		await prisma.bloodRequest.create({
+	const createdRequest = await prisma.bloodRequest.create({
+		data: {
+			requestNumber,
 
-			data: {
+			createdById: userId,
 
-				requestNumber,
+			patientId,
 
-				createdById: userId,
+			callerId,
 
-				patientId,
+			hospitalId,
 
-				callerId,
+			bloodGroup: requestData.bloodGroup,
 
-				hospitalId,
+			component: requestData.component ?? "WHOLE_BLOOD",
 
-				bloodGroup:
-					requestData.bloodGroup,
+			unitsRequired: requestData.unitsRequired,
 
-				component:
-					requestData.component ??
-					"WHOLE_BLOOD",
+			unitsFulfilled: 0,
 
-				unitsRequired:
-					requestData.unitsRequired,
+			urgency: requestData.urgency ?? "URGENT",
 
-				unitsFulfilled: 0,
+			requiredDate: requiredDateTime,
 
-				urgency:
-					requestData.urgency ??
-					"URGENT",
+			requiredTime: requiredDateTime,
 
-				requiredDate:
-					requestData.requiredDate,
+			division: requestData.division,
 
-				requiredTime:
-					requestData.requiredTime,
+			district: requestData.district,
 
-				division:
-					requestData.division,
+			area: requestData.area,
 
-				district:
-					requestData.district,
+			address: requestData.address,
 
-				area:
-					requestData.area,
+			latitude: coordinates.latitude,
 
-				address:
-					requestData.address,
+			longitude: coordinates.longitude,
 
-				latitude:
-					coordinates.latitude,
+			contactName: requestData.contactName ?? user.name,
 
-				longitude:
-					coordinates.longitude,
+			contactPhone: requestData.contactPhone ?? user.phone,
 
-				contactName:
-					requestData.contactName ??
-					user.name,
+			reason: requestData.reason,
 
-				contactPhone:
-					requestData.contactPhone ??
-					user.phone,
+			notes: requestData.notes,
 
-				reason:
-					requestData.reason,
+			status: BloodRequestStatus.PENDING_VERIFICATION,
 
-				notes:
-					requestData.notes,
+			verificationStatus: "PENDING",
 
-				status:
-					BloodRequestStatus.PENDING_VERIFICATION,
+			expiresAt: requestData.expiresAt,
+		},
+	});
 
-				verificationStatus:
-					"PENDING",
-
-				expiresAt:
-					requestData.expiresAt,
-			},
-		});
-
-  //send Email with OTP
+	//send Email with OTP
 	const templatePath = path.join(
 		process.cwd(),
 		"/src/app/templates/blood-request/new-blood.request.ejs",
 	);
 	const templateData = {
-	requestNumber: requestNumber,
+		requestNumber: requestNumber,
 
-	bloodGroup: requestData.bloodGroup,
+		bloodGroup: requestData.bloodGroup,
 
-	component: requestData.component,
+		component: requestData.component,
 
-	unitsRequired: requestData.unitsRequired,
+		unitsRequired: requestData.unitsRequired,
 
-	urgency: requestData.urgency,
+		urgency: requestData.urgency,
 
-	requiredDate: requestData.requiredDate.toLocaleDateString(
-		"en-BD",
-		{
+		requiredDate: requestData.requiredDate.toLocaleDateString("en-BD", {
 			timeZone: "Asia/Dhaka",
-		}
-	),
+		}),
 
-	requiredTime: requestData.requiredTime
-		? requestData.requiredTime.toLocaleTimeString(
-				"en-BD",
-				{
+		requiredTime: requiredDateTime
+			? requiredDateTime.toLocaleTimeString("en-BD", {
 					timeZone: "Asia/Dhaka",
 					hour: "2-digit",
 					minute: "2-digit",
-				}
-		  )
-		: null,
+				})
+			: null,
 
-	requesterName: user.name,
+		requesterName: user.name,
 
-	requesterEmail: user.email,
+		requesterEmail: user.email,
 
-	requesterPhone: user.phone,
+		requesterPhone: user.phone,
 
-	requesterRole: user.role,
+		requesterRole: user.role,
 
-	division: requestData.division,
+		division: requestData.division,
 
-	district: requestData.district,
+		district: requestData.district,
 
-	area: requestData.area,
+		area: requestData.area,
 
-	address: requestData.address,
+		address: requestData.address,
 
-	contactName: requestData.contactName,
+		contactName: requestData.contactName,
 
-	contactPhone: requestData.contactPhone,
+		contactPhone: requestData.contactPhone,
 
-	reason: requestData.reason,
+		reason: requestData.reason,
 
-	notes: requestData.notes,
+		notes: requestData.notes,
 
-	adminRequestUrl:
-		`${config.frontend_url}/admin/blood-requests/${createdRequest.id}`,
-};
+		adminRequestUrl: `${config.frontend_url}/admin/blood-requests/${createdRequest.id}`,
+	};
 
 	const html = await ejs.renderFile(templatePath, templateData);
-  	const subject =
-	`🩸 New Blood Request ${requestNumber} — Verification Required`;
+	const subject = `🩸 New Blood Request ${requestNumber} — Verification Required`;
 
 	await transporter.sendMail({
 		from: `"BloodLink" <${config.smtp_sender}>`,
-		to: "mmonirz.dev@gmail.com",// admin email will set
+		to: "mmonirz.dev@gmail.com", // admin email will set
 		subject,
 		html,
 	});
 
 	return createdRequest;
-
 };
 
 const verifyBloodRequestByAdmin = async (
 	adminId: string,
 	id: string,
-	payload: IVerifyBloodRequest
+	payload: IVerifyBloodRequest,
 ) => {
-
 	// 1. Verify admin
 	const admin = await prisma.user.findUnique({
 		where: {
@@ -346,51 +296,37 @@ const verifyBloodRequestByAdmin = async (
 	});
 
 	if (!admin) {
-		throw new AppError(
-			httpStatus.NOT_FOUND,
-			"Admin not found"
-		);
+		throw new AppError(httpStatus.NOT_FOUND, "Admin not found");
 	}
 
-	if (
-		admin.role !== UserRole.ADMIN &&
-		admin.role !== UserRole.SUPER_ADMIN
-	) {
+	if (admin.role !== UserRole.ADMIN && admin.role !== UserRole.SUPER_ADMIN) {
 		throw new AppError(
 			httpStatus.FORBIDDEN,
-			"Only admin can verify blood requests"
+			"Only admin can verify blood requests",
 		);
 	}
 
 	// 2. Find request
-	const bloodRequest =
-		await prisma.bloodRequest.findUnique({
-			where: {
-				id,
-			},
-		});
+	const bloodRequest = await prisma.bloodRequest.findUnique({
+		where: {
+			id,
+		},
+	});
 
 	if (!bloodRequest) {
-		throw new AppError(
-			httpStatus.NOT_FOUND,
-			"Blood request not found"
-		);
+		throw new AppError(httpStatus.NOT_FOUND, "Blood request not found");
 	}
 
 	// 3. Check current state
-	if (
-		bloodRequest.status !==
-		BloodRequestStatus.PENDING_VERIFICATION
-	) {
+	if (bloodRequest.status !== BloodRequestStatus.PENDING_VERIFICATION) {
 		throw new AppError(
 			httpStatus.BAD_REQUEST,
-			"Only pending blood requests can be verified"
+			"Only pending blood requests can be verified",
 		);
 	}
 
 	// 4. Rejected
 	if (payload.verificationStatus === "REJECTED") {
-
 		return await prisma.bloodRequest.update({
 			where: {
 				id,
@@ -398,7 +334,7 @@ const verifyBloodRequestByAdmin = async (
 			data: {
 				verificationStatus: VerificationStatus.REJECTED,
 				status: BloodRequestStatus.REJECTED,
-				rejectionReason:payload.rejectionReason,
+				rejectionReason: payload.rejectionReason,
 				verifiedById: adminId,
 				verifiedAt: new Date(),
 			},
@@ -406,7 +342,7 @@ const verifyBloodRequestByAdmin = async (
 	}
 
 	// 5. Verified
-	const updatedRequest= await prisma.bloodRequest.update({
+	const updatedRequest = await prisma.bloodRequest.update({
 		where: {
 			id,
 		},
@@ -418,19 +354,18 @@ const verifyBloodRequestByAdmin = async (
 		},
 	});
 
-  // Start donor matching
-  void findAndMatchDonors(updatedRequest.id).catch((error) => {
-    console.error(
-        `Donor matching failed for request ${updatedRequest.id}:`,
-        error,
-    );
-});
+	// Start donor matching
+	void findAndMatchDonors(updatedRequest.id).catch((error) => {
+		console.error(
+			`Donor matching failed for request ${updatedRequest.id}:`,
+			error,
+		);
+	});
 
-  return updatedRequest
+	return updatedRequest;
 };
-
 
 export const bloodRequestService = {
 	createBloodRequest,
-  verifyBloodRequestByAdmin
+	verifyBloodRequestByAdmin,
 };

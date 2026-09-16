@@ -1,11 +1,11 @@
 import { HttpStatusCode } from "axios";
 import app from "../../../app";
 import { BloodGroup } from "../../../generated/prisma/enums";
-import { UserWhereInput } from "../../../generated/prisma/models";
-import { IQuery } from "../../interface";
+import type { UserWhereInput } from "../../../generated/prisma/models";
+import type { IQuery } from "../../interface";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utility/AppError";
-import { IUserProfileUpdatePayload } from "./user.interface";
+import type { IUserProfileUpdatePayload } from "./user.interface";
 import { tr } from "zod/locales";
 
 const getAllUsers = async (query: IQuery) => {
@@ -116,8 +116,7 @@ const getAllUsers = async (query: IQuery) => {
 			"O-": BloodGroup.O_NEGATIVE,
 		};
 
-		const bloodGroup =
-			bloodGroupMap[searchTerm.toUpperCase()];
+		const bloodGroup = bloodGroupMap[searchTerm.toUpperCase()];
 
 		if (bloodGroup) {
 			orConditions.push({
@@ -219,10 +218,7 @@ const updateProfile = async (
 	});
 
 	if (!user) {
-		throw new AppError(
-			HttpStatusCode.NotFound,
-			"User not found",
-		);
+		throw new AppError(HttpStatusCode.NotFound, "User not found");
 	}
 
 	// ============================================
@@ -230,22 +226,15 @@ const updateProfile = async (
 	// ============================================
 
 	if (user.status === "BLOCKED") {
-		throw new AppError(
-			HttpStatusCode.Conflict,
-			"User is blocked",
-		);
+		throw new AppError(HttpStatusCode.Conflict, "User is blocked");
 	}
 
 	// ============================================
 	// Separate User & Profile Data
 	// ============================================
 
-	const {
-		donorProfile,
-		patientProfile,
-		hospitalProfile,
-		...userData
-	} = payload;
+	const { donorProfile, patientProfile, hospitalProfile, ...userData } =
+		payload;
 
 	// ============================================
 	// Transaction
@@ -326,5 +315,5 @@ const updateProfile = async (
 
 export const userService = {
 	getAllUsers,
-	updateProfile
+	updateProfile,
 };

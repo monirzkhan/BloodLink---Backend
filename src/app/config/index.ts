@@ -32,7 +32,7 @@ export default {
 	smtp_password: process.env.SMTP_PASSWORD!,
 	smtp_sender: process.env.SMTP_SENDER!,
 	node_env: process.env.NODE_ENV || "development",
-	google_client_id:process.env.GOOGLE_CLIENT_ID!,
+	google_client_id: process.env.GOOGLE_CLIENT_ID!,
 	bkash_base_url: process.env.BKASH_BASE_URL!,
 	bkash_username: process.env.BKASH_USERNAME!,
 	bkash_password: process.env.BKASH_PASSWORD!,

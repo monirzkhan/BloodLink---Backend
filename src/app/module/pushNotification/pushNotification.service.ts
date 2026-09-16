@@ -30,7 +30,6 @@ const subscribeToPush = async (
 	});
 };
 
-export const pushNotificationService={
-    subscribeToPush
-
-}
+export const pushNotificationService = {
+	subscribeToPush,
+};

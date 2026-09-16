@@ -43,7 +43,10 @@ export const getGrantToken = async () => {
 				},
 			);
 			if (!bkashRefreshTokenResponse.ok) {
-				throw new AppError(httpStatus.BAD_REQUEST, "Bkash Refresh token failed");
+				throw new AppError(
+					httpStatus.BAD_REQUEST,
+					"Bkash Refresh token failed",
+				);
 			}
 
 			const bkashRefreshTokenResult = await bkashRefreshTokenResponse.json();

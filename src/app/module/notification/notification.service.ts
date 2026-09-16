@@ -1,86 +1,64 @@
 import webpush from "../../lib/pushNotification";
 import { prisma } from "../../lib/prisma";
-import { IPushPayload, IPushSubscription } from "./notification.interface";
-
+import type { IPushPayload, IPushSubscription } from "./notification.interface";
 
 const savePushSubscription = async (
 	userId: string,
 	payload: IPushSubscription,
-	userAgent?: string
+	userAgent?: string,
 ) => {
+	const subscription = await prisma.pushSubscription.upsert({
+		where: {
+			endpoint: payload.endpoint,
+		},
 
-	const subscription =
-		await prisma.pushSubscription.upsert({
+		update: {
+			p256dh: payload.keys.p256dh,
+			auth: payload.keys.auth,
+			userAgent,
+		},
 
-			where: {
-				endpoint: payload.endpoint,
-			},
+		create: {
+			userId,
 
-			update: {
-				p256dh: payload.keys.p256dh,
-				auth: payload.keys.auth,
-				userAgent,
-			},
+			endpoint: payload.endpoint,
 
-			create: {
-				userId,
+			p256dh: payload.keys.p256dh,
 
-				endpoint:
-					payload.endpoint,
+			auth: payload.keys.auth,
 
-				p256dh:
-					payload.keys.p256dh,
-
-				auth:
-					payload.keys.auth,
-
-				userAgent,
-			},
-		});
+			userAgent,
+		},
+	});
 
 	return subscription;
 };
 
-const sendPushNotification = async (
-	userId: string,
-	payload: IPushPayload
-) => {
-
-	const subscriptions =
-		await prisma.pushSubscription.findMany({
-			where: {
-				userId,
-			},
-		});
+const sendPushNotification = async (userId: string, payload: IPushPayload) => {
+	const subscriptions = await prisma.pushSubscription.findMany({
+		where: {
+			userId,
+		},
+	});
 
 	for (const subscription of subscriptions) {
-
 		try {
-
 			await webpush.sendNotification(
-
 				{
-					endpoint:
-						subscription.endpoint,
+					endpoint: subscription.endpoint,
 
 					keys: {
-						p256dh:
-							subscription.p256dh,
+						p256dh: subscription.p256dh,
 
-						auth:
-							subscription.auth,
+						auth: subscription.auth,
 					},
 				},
 
-				JSON.stringify(payload)
+				JSON.stringify(payload),
 			);
-
 		} catch (error: any) {
-
 			// Subscription expired or is no longer valid
-			if (error.statusCode === 404 ||
-				error.statusCode === 410) {
-
+			if (error.statusCode === 404 || error.statusCode === 410) {
 				await prisma.pushSubscription.delete({
 					where: {
 						id: subscription.id,

@@ -23,29 +23,24 @@ router.post(
 );
 router.get(
 	"/me",
-	auth("ADMIN","CALLER","DONOR","HOSPITAL","SUPER_ADMIN","PATIENT"),
-	authController.getMe
+	auth("ADMIN", "CALLER", "DONOR", "HOSPITAL", "SUPER_ADMIN", "PATIENT"),
+	authController.getMe,
 );
 
-router.post(
-	"/refresh-token",
-	authController.refreshToken
-);
+router.post("/refresh-token", authController.refreshToken);
 
 router.post(
 	"/forgot-password",
 	zoDvalidation(userValidation.forgotPasswordZodSchema),
-	authController.forgotPassword
+	authController.forgotPassword,
 );
 
 router.post(
 	"/reset-password",
 	zoDvalidation(userValidation.resetPasswordZodSchema),
-	authController.resetPassword
+	authController.resetPassword,
 );
 
-router.post('/google-login',
-	authController.googleLogin
-)
+router.post("/google-login", authController.googleLogin);
 
 export const authRoute = router;

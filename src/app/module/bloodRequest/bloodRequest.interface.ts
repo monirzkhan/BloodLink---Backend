@@ -1,11 +1,11 @@
-import {
+import type {
 	BloodComponent,
 	BloodGroup,
 	RequestUrgency,
 } from "../../../generated/prisma/enums";
 
 export interface ICreateBloodRequest {
-  id?: string;
+	id?: string;
 	patientId?: string;
 	callerId?: string;
 	hospitalId?: string;
@@ -18,7 +18,7 @@ export interface ICreateBloodRequest {
 	urgency?: RequestUrgency;
 
 	requiredDate: Date;
-	requiredTime?: Date;
+	requiredTime: string;
 
 	division?: string;
 	district?: string;
@@ -38,8 +38,8 @@ export interface ICreateBloodRequest {
 }
 
 export interface IVerifyBloodRequest {
-  verificationStatus: string;
-  rejectionReason?:string
+	verificationStatus: string;
+	rejectionReason?: string;
 }
 
 // export interface Candidate  {
@@ -49,7 +49,7 @@ export interface IVerifyBloodRequest {
 // };
 
 export type Candidate = {
-    donorId: string;
-    distanceKm: number | null;
-    matchScore: number;
+	donorId: string;
+	distanceKm: number | null;
+	matchScore: number;
 };

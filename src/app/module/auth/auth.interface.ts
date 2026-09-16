@@ -57,5 +57,5 @@ export interface IResetPasswordPayload {
 }
 
 export interface IGoogleLoginPayload {
-	idToken: string
+	idToken: string;
 }

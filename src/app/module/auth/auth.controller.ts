@@ -3,7 +3,7 @@ import { catchAsync } from "../../utility/catchAsync";
 import { authService } from "./auth.service";
 import { sendResponse } from "../../utility/sendResponse";
 import httpStatus from "http-status";
-import { IRequestUser } from "./auth.interface";
+import type { IRequestUser } from "./auth.interface";
 import { AppError } from "../../utility/AppError";
 
 const generateOTP = catchAsync(async (req: Request, res: Response) => {
@@ -45,9 +45,7 @@ const verifyEmailOTP = catchAsync(async (req: Request, res: Response) => {
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	const ipAddress = req.ip === "::1"
-        ? "127.0.0.1"
-        : req.ip
+	const ipAddress = req.ip === "::1" ? "127.0.0.1" : req.ip;
 	const result = await authService.loginUser(payload, ipAddress as string);
 	const { accessToken, refreshToken } = result;
 
@@ -78,7 +76,10 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
 	const user = req.user as unknown as IRequestUser;
 
 	if (!user) {
-		throw new AppError(httpStatus.BAD_REQUEST, "User information is missing in the request");
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"User information is missing in the request",
+		);
 	}
 
 	const result = await authService.getMe(user);
@@ -135,9 +136,7 @@ const forgotPassword = catchAsync(async (req: Request, res: Response) => {
 
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	const ipAddress = req.ip === "::1"
-        ? "127.0.0.1"
-        : req.ip
+	const ipAddress = req.ip === "::1" ? "127.0.0.1" : req.ip;
 	await authService.resetPassword(payload, ipAddress as string);
 
 	sendResponse(res, {
@@ -176,7 +175,7 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 		},
 	});
 });
-	
+
 export const authController = {
 	generateOTP,
 	verifyEmailOTP,
@@ -185,5 +184,5 @@ export const authController = {
 	refreshToken,
 	forgotPassword,
 	resetPassword,
-	googleLogin
+	googleLogin,
 };

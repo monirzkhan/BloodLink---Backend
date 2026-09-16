@@ -3,13 +3,10 @@ import httpStatus from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
 import config from "../config";
 import { prisma } from "../lib/prisma";
-import { UserRole } from "../../generated/prisma/enums";
+import type { UserRole } from "../../generated/prisma/enums";
 import { catchAsync } from "../utility/catchAsync";
 import { AppError } from "../utility/AppError";
 import { jwtUtils } from "../utility/jwt";
-
-
-
 
 export interface RequestUser {
 	email: string;
@@ -22,7 +19,6 @@ declare global {
 	namespace Express {
 		interface Request {
 			user?: RequestUser;
-	
 		}
 	}
 }
@@ -69,7 +65,10 @@ export const auth = (...requiredRoles: UserRole[]) => {
 		});
 
 		if (!user) {
-			throw new AppError(httpStatus.UNAUTHORIZED, "User not found. Please log in again.");
+			throw new AppError(
+				httpStatus.UNAUTHORIZED,
+				"User not found. Please log in again.",
+			);
 		}
 
 		if (user.status === "BLOCKED") {

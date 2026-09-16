@@ -19,16 +19,20 @@ import { redis } from "../../lib/redis";
 import path from "path";
 import ejs from "ejs";
 import { transporter } from "../../lib/nodemailer";
-import { AuthProvider, UserRole, UserStatus } from "../../../generated/prisma/enums";
+import {
+	AuthProvider,
+	UserRole,
+	UserStatus,
+} from "../../../generated/prisma/enums";
 import { AppError } from "../../utility/AppError";
 import httpStatus from "http-status";
-import { TokenPayload } from "google-auth-library";
+import type { TokenPayload } from "google-auth-library";
 import { googleClient } from "../../lib/googleAuth";
 import { getCoordinates } from "../../utility/coordinates";
 
 const generateOTP = async (payload: ICreateAccountPayload) => {
-	const { name, password, phone,role, donorProfile } = payload;
-	
+	const { name, password, phone, role, donorProfile } = payload;
+
 	const email = payload.email.trim().toLowerCase();
 
 	const isUserExist = await prisma.user.findUnique({
@@ -61,7 +65,7 @@ const generateOTP = async (payload: ICreateAccountPayload) => {
 		password: hashedPassword,
 		phone,
 		role,
-		donorProfile
+		donorProfile,
 	};
 	const redisDataKey = `User-Registration-Data:${email}`;
 
@@ -126,7 +130,7 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 	const redisDataKey = `User-Registration-Data:${email}`;
 	const redisDataPayload = await redis.get(redisDataKey);
 	if (!redisDataPayload) {
-		throw new AppError(httpStatus.NOT_FOUND,"User data not found in Redis");
+		throw new AppError(httpStatus.NOT_FOUND, "User data not found in Redis");
 	}
 
 	const userDataPayload: IRedisRegistrationPayload =
@@ -135,6 +139,8 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 	const address = `${userDataPayload.donorProfile.area}, ${userDataPayload.donorProfile.district}, Bangladesh`;
 
 	const coordinates = await getCoordinates(address);
+
+	console.log(coordinates, " from Donor Profile");
 
 	const createdUser = await prisma.user.create({
 		data: {
@@ -314,7 +320,7 @@ const getMe = async (user: IRequestUser) => {
 	});
 
 	if (!isUserExists) {
-		throw new AppError(httpStatus.NOT_FOUND,"User not found");
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
 	}
 
 	return isUserExists;
@@ -327,7 +333,8 @@ const refreshToken = async (token: string) => {
 	);
 
 	if (!verifiedRefreshToken.success || !verifiedRefreshToken.data) {
-		throw new AppError(httpStatus.UNAUTHORIZED,
+		throw new AppError(
+			httpStatus.UNAUTHORIZED,
 			config.node_env === "development"
 				? verifiedRefreshToken.error
 				: "Invalid refresh token",
@@ -427,7 +434,10 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
 	});
 };
 
-const resetPassword = async (payload: IResetPasswordPayload, ipAddress: string) => {
+const resetPassword = async (
+	payload: IResetPasswordPayload,
+	ipAddress: string,
+) => {
 	const { email, newPassword, otp } = payload;
 	const isUserExist = await prisma.user.findUnique({
 		where: {
@@ -444,16 +454,15 @@ const resetPassword = async (payload: IResetPasswordPayload, ipAddress: string) 
 	if (!isUserExist.emailVerified) {
 		throw new AppError(httpStatus.BAD_REQUEST, "User is not verified");
 	}
-		// if (isUserExist.isDeleted && isUserExist.status === "DELETED") {
-		// 	throw new AppError(httpStatus.NOT_FOUND, "User is Deleted");
-		// }
+	// if (isUserExist.isDeleted && isUserExist.status === "DELETED") {
+	// 	throw new AppError(httpStatus.NOT_FOUND, "User is Deleted");
+	// }
 	if (isUserExist.googleId && isUserExist.authProvider === "GOOGLE") {
 		throw new AppError(httpStatus.BAD_REQUEST, "User account with google");
 	}
 
 	const key = `Forgot-Password-OTP: ${isUserExist.email}`;
 	const redisOTP = await redis.get(key);
-
 
 	if (!redisOTP) {
 		throw new AppError(httpStatus.BAD_REQUEST, "OTP not found");
@@ -470,7 +479,7 @@ const resetPassword = async (payload: IResetPasswordPayload, ipAddress: string) 
 
 	const updatedUser = await prisma.user.update({
 		where: {
-			email
+			email,
 		},
 		data: {
 			password: newHashPassword,
@@ -488,14 +497,13 @@ const resetPassword = async (payload: IResetPasswordPayload, ipAddress: string) 
 		name: isUserExist.name,
 		email: isUserExist.email,
 		changedAt: new Date().toLocaleString("en-US", {
-        timeZone: "Asia/Dhaka",
-        hour12: true,
-    }),
+			timeZone: "Asia/Dhaka",
+			hour12: true,
+		}),
 
-    ipAddress,
+		ipAddress,
 
-    loginUrl: `${config.frontend_url}/login`,
-		
+		loginUrl: `${config.frontend_url}/login`,
 	};
 
 	const html = await ejs.renderFile(templatePath, templateData);
@@ -503,7 +511,7 @@ const resetPassword = async (payload: IResetPasswordPayload, ipAddress: string) 
 		from: `"BloodLink"<${config.smtp_sender}>`,
 		to: email,
 		subject: "Changed Password",
-		html
+		html,
 	});
 };
 
@@ -520,17 +528,26 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 		console.log(googleIdTokenPayload, "Google Token");
 	} catch (error) {
 		console.log("Google ID Token Verification Failed", error);
-		throw new AppError(httpStatus.BAD_REQUEST,"Invalid Or Expired Google Id Token");
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"Invalid Or Expired Google Id Token",
+		);
 	}
 	if (!googleIdTokenPayload) {
-		throw new AppError(httpStatus.BAD_REQUEST,"Invalid Or Expired Google Id Token");
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"Invalid Or Expired Google Id Token",
+		);
 	}
 
 	if (!googleIdTokenPayload.email) {
-		throw new AppError(httpStatus.NOT_FOUND,"Google Email Not Found");
+		throw new AppError(httpStatus.NOT_FOUND, "Google Email Not Found");
 	}
 	if (!googleIdTokenPayload.name) {
-		throw new AppError(httpStatus.NOT_FOUND,"Google Email User Name Not Found");
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			"Google Email User Name Not Found",
+		);
 	}
 
 	const ifUserExistWithGoogleAuth = await prisma.user.findUnique({
@@ -554,10 +571,10 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 
 		if (ifUserExistWithCredentials) {
 			if (!ifUserExistWithCredentials.emailVerified) {
-				throw new AppError(httpStatus.CONFLICT,"Email not varified");
+				throw new AppError(httpStatus.CONFLICT, "Email not varified");
 			}
 			if (ifUserExistWithCredentials.status === UserStatus.BLOCKED) {
-				throw new AppError(httpStatus.CONFLICT,"User Is Blocked");
+				throw new AppError(httpStatus.CONFLICT, "User Is Blocked");
 			}
 
 			// if (
@@ -587,7 +604,7 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 					emailVerified: true,
 					donorProfile: {
 						create: {
-							bloodGroup:"B_POSITIVE"
+							bloodGroup: "B_POSITIVE",
 						},
 					},
 				},
@@ -595,11 +612,11 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 		}
 	}
 	if (!user) {
-		throw new AppError(httpStatus.NOT_FOUND,"User Not Found");
+		throw new AppError(httpStatus.NOT_FOUND, "User Not Found");
 	}
 
 	if (user.status === UserStatus.BLOCKED) {
-		throw new AppError(httpStatus.BAD_REQUEST,"User Is Blocked");
+		throw new AppError(httpStatus.BAD_REQUEST, "User Is Blocked");
 	}
 
 	// if (user.isDeleted || user.status === UserStatus.DELETED) {
@@ -630,7 +647,6 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 	};
 };
 
-
 export const authService = {
 	createAccount,
 	generateOTP,
@@ -639,5 +655,5 @@ export const authService = {
 	refreshToken,
 	forgotPassword,
 	resetPassword,
-	googleLogin
+	googleLogin,
 };
