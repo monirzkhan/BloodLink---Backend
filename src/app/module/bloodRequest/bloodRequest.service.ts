@@ -207,7 +207,7 @@ const createBloodRequest = async (
 
 			verificationStatus: "PENDING",
 
-			expiresAt: requestData.expiresAt,
+			expiresAt: requestData.requiredDate,
 		},
 	});
 

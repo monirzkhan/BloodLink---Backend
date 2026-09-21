@@ -147,7 +147,7 @@ export const findAndMatchDonors = async (requestId: string) => {
 				);
 			}
 
-			// 🚫 Donors more than 30 KM away are NOT candidates
+			// Donors more than 30 KM away are NOT candidates
 			if (distanceKm !== null && distanceKm > 30) {
 				return null;
 			}
@@ -229,6 +229,11 @@ export const findAndMatchDonors = async (requestId: string) => {
 		const createdOffers: any = [];
 
 		for (const donor of selectedDonors) {
+
+			const expiresAt = new Date(
+			Date.now() + 24 * 60 * 60 * 1000 // 24 hrs
+			);
+
 			const offer = await tx.bloodRequestDonor.upsert({
 				where: {
 					requestId_donorId: {
@@ -236,13 +241,16 @@ export const findAndMatchDonors = async (requestId: string) => {
 						donorId: donor.donorId,
 					},
 				},
-				update: {},
+				update: {
+					notifiedAt: new Date()
+				},
 				create: {
 					requestId: request.id,
 					donorId: donor.donorId,
 					matchScore: donor.matchScore,
 					distanceKm: donor.distanceKm,
 					status: DonorOfferStatus.OFFERED,
+					expiresAt
 				},
 			});
 
@@ -261,26 +269,26 @@ export const findAndMatchDonors = async (requestId: string) => {
 		return createdOffers;
 	});
 
-	await prisma.donorReservation.createMany({
-		data: result.map((offer: any) => ({
-			requestId: request.id,
-			donorId: offer.donorId,
-			donorOfferId: offer.id,
-		})),
-		skipDuplicates: true,
-	});
+	// await prisma.donorReservation.createMany({
+	// 	data: result.map((offer: any) => ({
+	// 		requestId: request.id,
+	// 		donorId: offer.donorId,
+	// 		donorOfferId: offer.id,
+	// 	})),
+	// 	skipDuplicates: true,
+	// });
 
 	//send Email and SMS
 	const sendFakeSms = async (phone: string, message: string) => {
 		console.log(`
-========================================
-📱 FAKE SMS
-========================================
-To: ${phone}
+		========================================
+		📱 FAKE SMS
+		========================================
+		To: ${phone}
 
-${message}
-========================================
-`);
+		${message}
+		========================================
+		`);
 	};
 
 	// ========================================
@@ -408,6 +416,15 @@ ${message}
 	} catch (error) {
 		console.error("Failed to send donor push notifications:", error);
 	}
+
+// 	// await prisma.bloodRequestDonor.update({
+// 	// where: {
+// 	// 	id: 
+// 	// },
+// 	// data: {
+// 	// 	notifiedAt: new Date(),
+// 	// },
+// });
 
 	return selectedDonors;
 };
