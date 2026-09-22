@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Donor Accepted Your Blood Request - BloodLink</title>
+</head>
+
+<body
+	style="
+		margin: 0;
+		padding: 0;
+		background-color: #f8f9fa;
+		font-family: Arial, Helvetica, sans-serif;
+		color: #1f2937;
+	"
+>
+	<table
+		width="100%"
+		cellpadding="0"
+		cellspacing="0"
+		border="0"
+		style="background-color: #f8f9fa; padding: 30px 15px;"
+	>
+		<tr>
+			<td align="center">
+
+				<!-- Main Container -->
+				<table
+					width="600"
+					cellpadding="0"
+					cellspacing="0"
+					border="0"
+					style="
+						max-width: 600px;
+						width: 100%;
+						background-color: #ffffff;
+						border-radius: 12px;
+						overflow: hidden;
+						box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+					"
+				>
+
+					<!-- Header -->
+					<tr>
+						<td
+							align="center"
+							style="
+								background-color: #b91c1c;
+								padding: 28px 20px;
+							"
+						>
+							<table
+								cellpadding="0"
+								cellspacing="0"
+								border="0"
+							>
+								<tr>
+									<td
+										align="center"
+										style="
+											width: 55px;
+											height: 55px;
+											background-color: #ffffff;
+											border-radius: 50%;
+											font-size: 30px;
+										"
+									>
+										🩸
+									</td>
+								</tr>
+							</table>
+
+							<h1
+								style="
+									margin: 12px 0 5px 0;
+									color: #ffffff;
+									font-size: 28px;
+									line-height: 1.2;
+								"
+							>
+								BloodLink
+							</h1>
+
+							<p
+								style="
+									margin: 0;
+									color: #fee2e2;
+									font-size: 14px;
+								"
+							>
+								Connecting Lives Through Blood
+							</p>
+						</td>
+					</tr>
+
+					<!-- Development Test Notice -->
+					<tr>
+						<td style="padding: 18px 25px 0 25px;">
+							<table
+								width="100%"
+								cellpadding="0"
+								cellspacing="0"
+								border="0"
+								style="
+									background-color: #fff7ed;
+									border: 1px solid #fed7aa;
+									border-radius: 8px;
+								"
+							>
+								<tr>
+									<td
+										style="
+											padding: 12px 15px;
+											color: #9a3412;
+											font-size: 13px;
+											line-height: 1.5;
+										"
+									>
+										<strong>⚠️ Development Test Email</strong><br />
+										This email is currently being sent for
+										<strong>development and testing purposes only</strong>.
+										This notice will be removed after deployment.
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+
+					<!-- Content -->
+					<tr>
+						<td style="padding: 30px 30px 20px 30px;">
+
+							<!-- Success Icon -->
+							<table
+								width="100%"
+								cellpadding="0"
+								cellspacing="0"
+								border="0"
+							>
+								<tr>
+									<td align="center">
+
+										<div
+											style="
+												width: 64px;
+												height: 64px;
+												line-height: 64px;
+												background-color: #dcfce7;
+												border-radius: 50%;
+												font-size: 30px;
+											"
+										>
+											✓
+										</div>
+
+									</td>
+								</tr>
+							</table>
+
+							<h2
+								style="
+									margin: 18px 0 10px 0;
+									text-align: center;
+									font-size: 23px;
+									color: #1f2937;
+								"
+							>
+								🩸 A Donor Accepted Your Request
+							</h2>
+
+							<p
+								style="
+									margin: 0 0 22px 0;
+									text-align: center;
+									font-size: 15px;
+									line-height: 1.6;
+									color: #4b5563;
+								"
+							>
+								Good news!
+								<br />
+								A donor has accepted your blood request.
+							</p>
+
+							<!-- Greeting -->
+							<p
+								style="
+									margin: 0 0 18px 0;
+									font-size: 15px;
+									line-height: 1.6;
+								"
+							>
+								Hello <strong><%= requesterName %></strong>,
+							</p>
+
+							<p
+								style="
+									margin: 0 0 22px 0;
+									font-size: 14px;
+									line-height: 1.6;
+									color: #4b5563;
+								"
+							>
+								We're happy to let you know that a donor has
+								accepted your BloodLink request and is willing
+								to help.
+							</p>
+
+							<!-- Request Information -->
+							<h3
+								style="
+									margin: 0 0 12px 0;
+									font-size: 17px;
+									color: #991b1b;
+								"
+							>
+								Request Information
+							</h3>
+
+							<table
+								width="100%"
+								cellpadding="0"
+								cellspacing="0"
+								border="0"
+								style="
+									border: 1px solid #e5e7eb;
+									border-radius: 8px;
+									margin-bottom: 25px;
+								"
+							>
+
+								<!-- Request Number -->
+								<tr>
+									<td
+										width="45%"
+										style="
+											padding: 13px 15px;
+											border-bottom: 1px solid #e5e7eb;
+											color: #6b7280;
+											font-size: 14px;
+										"
+									>
+										<strong>Request Number</strong>
+									</td>
+
+									<td
+										style="
+											padding: 13px 15px;
+											border-bottom: 1px solid #e5e7eb;
+											font-size: 14px;
+											font-weight: bold;
+											color: #1f2937;
+										"
+									>
+										<%= requestNumber %>
+									</td>
+								</tr>
+
+								<!-- Blood Group -->
+								<tr>
+									<td
+										style="
+											padding: 13px 15px;
+											border-bottom: 1px solid #e5e7eb;
+											color: #6b7280;
+											font-size: 14px;
+										"
+									>
+										<strong>Blood Group</strong>
+									</td>
+
+									<td
+										style="
+											padding: 13px 15px;
+											border-bottom: 1px solid #e5e7eb;
+											color: #b91c1c;
+											font-size: 16px;
+											font-weight: bold;
+										"
+									>
+										<%= bloodGroup %>
+									</td>
+								</tr>
+
+								<!-- Units -->
+								<tr>
+									<td
+										style="
+											padding: 13px 15px;
+											color: #6b7280;
+											font-size: 14px;
+										"
+									>
+										<strong>Units Required</strong>
+									</td>
+
+									<td
+										style="
+											padding: 13px 15px;
+											font-size: 14px;
+										"
+									>
+										<%= unitsRequired %>
+									</td>
+								</tr>
+
+							</table>
+
+							<!-- Donor Information -->
+							<h3
+								style="
+									margin: 0 0 12px 0;
+									font-size: 17px;
+									color: #991b1b;
+								"
+							>
+								Donor Information
+							</h3>
+
+							<table
+								width="100%"
+								cellpadding="0"
+								cellspacing="0"
+								border="0"
+								style="
+									background-color: #fef2f2;
+									border: 1px solid #fecaca;
+									border-radius: 8px;
+									margin-bottom: 25px;
+								"
+							>
+
+								<tr>
+									<td
+										width="45%"
+										style="
+											padding: 14px 15px;
+											border-bottom: 1px solid #fee2e2;
+											color: #6b7280;
+											font-size: 14px;
+										"
+									>
+										<strong>Name</strong>
+									</td>
+
+									<td
+										style="
+											padding: 14px 15px;
+											border-bottom: 1px solid #fee2e2;
+											font-size: 14px;
+											font-weight: bold;
+										"
+									>
+										<%= donorName %>
+									</td>
+								</tr>
+
+								<tr>
+									<td
+										style="
+											padding: 14px 15px;
+											color: #6b7280;
+											font-size: 14px;
+										"
+									>
+										<strong>Blood Group</strong>
+									</td>
+
+									<td
+										style="
+											padding: 14px 15px;
+											color: #b91c1c;
+											font-size: 16px;
+											font-weight: bold;
+										"
+									>
+										<%= donorBloodGroup %>
+									</td>
+								</tr>
+
+							</table>
+
+							<!-- Payment Notice -->
+							<table
+								width="100%"
+								cellpadding="0"
+								cellspacing="0"
+								border="0"
+								style="
+									background-color: #fff7ed;
+									border: 1px solid #fed7aa;
+									border-radius: 8px;
+									margin-bottom: 25px;
+								"
+							>
+								<tr>
+									<td style="padding: 18px;">
+										<p
+											style="
+												margin: 0 0 8px 0;
+												font-size: 16px;
+												font-weight: bold;
+												color: #9a3412;
+											"
+										>
+											💳 Complete Your BloodLink Service Fee
+										</p>
+
+										<p
+											style="
+												margin: 0;
+												font-size: 14px;
+												line-height: 1.6;
+												color: #78350f;
+											"
+										>
+											To continue with this request, please
+											complete the required BloodLink service
+											fee.
+										</p>
+
+										<% if (serviceFee) { %>
+											<p
+												style="
+													margin: 12px 0 0 0;
+													font-size: 18px;
+													font-weight: bold;
+													color: #9a3412;
+												"
+											>
+												Service Fee:
+												<%= serviceFee %>
+											</p>
+										<% } %>
+									</td>
+								</tr>
+							</table>
+
+							<!-- What Happens Next -->
+							<h3
+								style="
+									margin: 0 0 12px 0;
+									font-size: 17px;
+									color: #991b1b;
+								"
+							>
+								What Happens Next?
+							</h3>
+
+							<table
+								width="100%"
+								cellpadding="0"
+								cellspacing="0"
+								border="0"
+								style="
+									margin-bottom: 25px;
+								"
+							>
+
+								<tr>
+									<td
+										valign="top"
+										width="40"
+										style="
+											padding: 5px 10px 12px 0;
+											font-size: 20px;
+										"
+									>
+										1️⃣
+									</td>
+
+									<td
+										valign="top"
+										style="
+											padding: 5px 0 12px 0;
+											font-size: 14px;
+											line-height: 1.5;
+											color: #4b5563;
+										"
+									>
+										<strong style="color: #1f2937;">
+											Complete Payment
+										</strong>
+										<br />
+										Pay the required BloodLink service fee
+										to continue.
+									</td>
+								</tr>
+
+								<tr>
+									<td
+										valign="top"
+										width="40"
+										style="
+											padding: 5px 10px 12px 0;
+											font-size: 20px;
+										"
+									>
+										2️⃣
+									</td>
+
+									<td
+										valign="top"
+										style="
+											padding: 5px 0 12px 0;
+											font-size: 14px;
+											line-height: 1.5;
+											color: #4b5563;
+										"
+									>
+										<strong style="color: #1f2937;">
+											Donor Appointment
+										</strong>
+										<br />
+										After successful payment, the donor will
+										be able to book an appointment.
+									</td>
+								</tr>
+
+								<tr>
+									<td
+										valign="top"
+										width="40"
+										style="
+											padding: 5px 10px 5px 0;
+											font-size: 20px;
+										"
+									>
+										3️⃣
+									</td>
+
+									<td
+										valign="top"
+										style="
+											padding: 5px 0;
+											font-size: 14px;
+											line-height: 1.5;
+											color: #4b5563;
+										"
+									>
+										<strong style="color: #1f2937;">
+											Connect With the Donor
+										</strong>
+										<br />
+										Relevant contact information will be
+										shared with the appropriate parties
+										according to the BloodLink workflow.
+									</td>
+								</tr>
+
+							</table>
+
+							<!-- Payment Button -->
+							<table
+								width="100%"
+								cellpadding="0"
+								cellspacing="0"
+								border="0"
+							>
+								<tr>
+									<td align="center">
+
+										<a
+											href="<%= paymentUrl %>"
+											style="
+												display: inline-block;
+												background-color: #b91c1c;
+												color: #ffffff;
+												text-decoration: none;
+												font-size: 15px;
+												font-weight: bold;
+												padding: 14px 32px;
+												border-radius: 7px;
+											"
+										>
+											💳 Pay Service Fee
+										</a>
+
+									</td>
+								</tr>
+							</table>
+
+							<!-- View Request -->
+							<table
+								width="100%"
+								cellpadding="0"
+								cellspacing="0"
+								border="0"
+								style="margin-top: 10px;"
+							>
+								<tr>
+									<td align="center">
+
+										<a
+											href="<%= requestUrl %>"
+											style="
+												display: inline-block;
+												color: #b91c1c;
+												text-decoration: none;
+												font-size: 14px;
+												font-weight: bold;
+												padding: 10px 20px;
+											"
+										>
+											View Request Details →
+										</a>
+
+									</td>
+								</tr>
+							</table>
+
+							<!-- Important Note -->
+							<table
+								width="100%"
+								cellpadding="0"
+								cellspacing="0"
+								border="0"
+								style="
+									margin-top: 25px;
+									border-top: 1px solid #e5e7eb;
+								"
+							>
+								<tr>
+									<td style="padding-top: 20px;">
+										<p
+											style="
+												margin: 0;
+												font-size: 12px;
+												line-height: 1.6;
+												color: #6b7280;
+											"
+										>
+											<strong>Important:</strong>
+											Please complete the payment only
+											through the official BloodLink
+											platform. Do not send payments
+											directly to a donor.
+										</p>
+									</td>
+								</tr>
+							</table>
+
+						</td>
+					</tr>
+
+					<!-- Footer -->
+					<tr>
+						<td
+							align="center"
+							style="
+								background-color: #fef2f2;
+								padding: 25px 20px;
+								border-top: 1px solid #fee2e2;
+							"
+						>
+							<p
+								style="
+									margin: 0 0 8px 0;
+									font-size: 15px;
+									font-weight: bold;
+									color: #991b1b;
+								"
+							>
+								Thank you for trusting BloodLink. ❤️
+							</p>
+
+							<p
+								style="
+									margin: 0 0 8px 0;
+									font-size: 13px;
+									color: #6b7280;
+								"
+							>
+								<strong>BloodLink</strong>
+							</p>
+
+							<p
+								style="
+									margin: 0;
+									font-size: 11px;
+									color: #9ca3af;
+									line-height: 1.5;
+								"
+							>
+								Connecting Lives Through Blood.
+								<br />
+								This is an automated email. Please do not reply.
+							</p>
+						</td>
+					</tr>
+
+				</table>
+
+			</td>
+		</tr>
+	</table>
+</body>
+</html>

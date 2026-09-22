@@ -229,9 +229,8 @@ export const findAndMatchDonors = async (requestId: string) => {
 		const createdOffers: any = [];
 
 		for (const donor of selectedDonors) {
-
 			const expiresAt = new Date(
-			Date.now() + 24 * 60 * 60 * 1000 // 24 hrs
+				Date.now() + 24 * 60 * 60 * 1000, // 24 hrs
 			);
 
 			const offer = await tx.bloodRequestDonor.upsert({
@@ -242,7 +241,7 @@ export const findAndMatchDonors = async (requestId: string) => {
 					},
 				},
 				update: {
-					notifiedAt: new Date()
+					notifiedAt: new Date(),
 				},
 				create: {
 					requestId: request.id,
@@ -250,7 +249,7 @@ export const findAndMatchDonors = async (requestId: string) => {
 					matchScore: donor.matchScore,
 					distanceKm: donor.distanceKm,
 					status: DonorOfferStatus.OFFERED,
-					expiresAt
+					expiresAt,
 				},
 			});
 
@@ -417,14 +416,14 @@ export const findAndMatchDonors = async (requestId: string) => {
 		console.error("Failed to send donor push notifications:", error);
 	}
 
-// 	// await prisma.bloodRequestDonor.update({
-// 	// where: {
-// 	// 	id: 
-// 	// },
-// 	// data: {
-// 	// 	notifiedAt: new Date(),
-// 	// },
-// });
+	// 	// await prisma.bloodRequestDonor.update({
+	// 	// where: {
+	// 	// 	id:
+	// 	// },
+	// 	// data: {
+	// 	// 	notifiedAt: new Date(),
+	// 	// },
+	// });
 
 	return selectedDonors;
 };

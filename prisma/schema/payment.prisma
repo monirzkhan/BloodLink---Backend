@@ -19,14 +19,14 @@ model Payment {
   bkashPaymentId String? @unique
   bkashTrxId     String?
   payerReference String? // user email / phone number
-  paidAt         String?
+  paidAt         DateTime?
 
   gatewayResponse Json?
 
   refundTrxId  String?
   refundAmount Decimal? @db.Decimal(10, 2)
   refundReason String?
-  refundedAt   String?
+  refundedAt   DateTime?
 
   status               PaymentStatus    @default(PENDING)
 

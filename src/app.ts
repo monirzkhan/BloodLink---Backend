@@ -13,6 +13,7 @@ import { userRoute } from "./app/module/user/user.route";
 import { bloodRequestRoute } from "./app/module/bloodRequest/bloodRequest.route";
 import { pushNotificationRouter } from "./app/module/pushNotification/pushNotification.route";
 import { donorOfferRouter } from "./app/module/donorOffer/donorOffer.route";
+import { contactRoutes } from "./app/module/contact/contact.route";
 
 const app: Application = express();
 
@@ -36,6 +37,7 @@ app.use("/api/v1/users", userRoute);
 app.use("/api/v1/request", bloodRequestRoute);
 app.use("/api/v1/donorOffers", donorOfferRouter);
 app.use("/api/v1/push-notification", pushNotificationRouter);
+app.use("/api/v1/contact", contactRoutes);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {
