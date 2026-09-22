@@ -256,6 +256,7 @@ const updateDonorOfferStatus = async (
 		},
 	);
 
+	//send email
 	const offerDetails = await prisma.bloodRequestDonor.findUnique({
 		where: {
 			id: result.offer.id,
@@ -311,7 +312,7 @@ const updateDonorOfferStatus = async (
 			donorName: donor?.name,
 			donorBloodGroup: donor?.donorProfile?.bloodGroup,
 
-			serviceFee: "৳500",
+			serviceFee: "৳349",
 
 			paymentUrl: `${config.frontend_url}/blood-requests/${offerDetails?.id}/payment`,
 

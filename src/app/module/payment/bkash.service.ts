@@ -1,7 +1,7 @@
 import config from "../../config";
 import { AppError } from "../../utility/AppError";
 import httpStatus from "http-status";
-import {
+import type {
 	IBkashCreatePaymentResponse,
 	IBkashExecutePaymentResponse,
 } from "./payment.interface";

@@ -15,7 +15,11 @@ import {
 	queryBkashPayment,
 } from "./bkash.service";
 
-import { ICreatePayment } from "./payment.interface";
+import type { ICreatePayment } from "./payment.interface";
+import path from "node:path";
+import config from "../../config";
+import { transporter } from "../../lib/nodemailer";
+import ejs from "ejs";
 
 // const createPayment = async () => {
 // 	const bkashIdToken = await getGrantToken();
@@ -357,6 +361,137 @@ const executePayment = async (userId: string, bkashPaymentId: string) => {
 	 * the transaction is committed.
 	 */
 
+	const request = await prisma.bloodRequest.findUnique({
+		where: {
+			id: payment.requestId,
+		},
+		include: {
+			createdBy: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					phone: true,
+				},
+			},
+			donors: {
+				where: {
+					status: DonorOfferStatus.ACCEPTED,
+				},
+				include: {
+					donor: {
+						select: {
+							id: true,
+							name: true,
+							email: true,
+							phone: true,
+							donorProfile: true,
+						},
+					},
+					reservation: true,
+				},
+			},
+			payments: {
+				where: {
+					status: PaymentStatus.SUCCESS,
+				},
+				select: {
+					id: true,
+				},
+			},
+		},
+	});
+	const requester = request?.createdBy;
+	const donors = request?.donors[0];
+	//send email to requester
+	if (requester?.email) {
+		const templatePath = path.join(
+			process.cwd(),
+			"src",
+			"app",
+			"templates",
+			"payment",
+			"payment-confirmation-requester.ejs",
+		);
+
+		const templateData = {
+			requesterName: requester.name,
+
+			requestNumber: request?.requestNumber,
+			bloodGroup: request?.bloodGroup,
+
+			amountPaid: `৳${payment.amount}`,
+			paymentMethod: "bKash",
+			transactionId: payment.bkashTrxId,
+
+			donorName: donors?.donor.name,
+			donorBloodGroup: donors?.donor.donorProfile?.bloodGroup,
+			donorPhone: donors?.donor.phone,
+			donorEmail: donors?.donor.email,
+
+			requestUrl: `${config.frontend_url}/blood-requests/${request?.id}`,
+		};
+
+		const html = await ejs.renderFile(templatePath, templateData);
+
+		console.log(`Sending email to: ${requester?.email}`);
+
+		await transporter.sendMail({
+			from: `"BloodLink" <${config.smtp_sender}>`,
+			to: requester.email,
+			subject: `🩸 Payment Confirmation`,
+			html,
+		});
+
+		console.log(`✅ Email sent to ${requester.email}`);
+	} else {
+		console.log(`⚠️ Requester ${requester?.name} has no email`);
+	}
+
+	//send email to donor
+	if (donors?.donor.email) {
+		const templatePath = path.join(
+			process.cwd(),
+			"src",
+			"app",
+			"templates",
+			"payment",
+			"payment-confirmation-donor.ejs",
+		);
+		const templateData = {
+			donorName: donors.donor.name,
+
+			requestNumber: request?.requestNumber,
+			bloodGroup: request?.bloodGroup,
+			unitsRequired: request?.unitsRequired,
+
+			requiredDate: request?.requiredDate,
+			requiredTime: request?.requiredTime,
+
+			requesterName: requester?.name,
+			requesterPhone: requester?.phone,
+			requesterEmail: requester?.email,
+
+			appointmentUrl: `${config.frontend_url}/blood-requests/${request?.id}/appointment`,
+
+			requestUrl: `${config.frontend_url}/blood-requests/${request?.id}`,
+		};
+		const html = await ejs.renderFile(templatePath, templateData);
+
+		console.log(`Sending email to: ${donors.donor.email}`);
+
+		await transporter.sendMail({
+			from: `"BloodLink" <${config.smtp_sender}>`,
+			to: donors.donor.email,
+			subject: `🩸 Payment Confirmation`,
+			html,
+		});
+
+		console.log(`✅ Email sent to ${donors.donor.email}`);
+	} else {
+		console.log(`⚠️ Donor ${donors?.donor.email} has no email`);
+	}
+
 	return updatedPayment;
 };
 
@@ -440,6 +575,7 @@ const handleBkashCallback = async (bkashPaymentId: string) => {
 
 	return updatedPayment;
 };
+
 export const paymentService = {
 	createPayment,
 	executePayment,

@@ -14,6 +14,7 @@ import { bloodRequestRoute } from "./app/module/bloodRequest/bloodRequest.route"
 import { pushNotificationRouter } from "./app/module/pushNotification/pushNotification.route";
 import { donorOfferRouter } from "./app/module/donorOffer/donorOffer.route";
 import { contactRoutes } from "./app/module/contact/contact.route";
+import { appointmentRoutes } from "./app/module/Appoinment/appoinment.routes";
 
 const app: Application = express();
 
@@ -38,6 +39,7 @@ app.use("/api/v1/request", bloodRequestRoute);
 app.use("/api/v1/donorOffers", donorOfferRouter);
 app.use("/api/v1/push-notification", pushNotificationRouter);
 app.use("/api/v1/contact", contactRoutes);
+app.use("/api/v1/appointment", appointmentRoutes);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {

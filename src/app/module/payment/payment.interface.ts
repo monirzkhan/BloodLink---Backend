@@ -1,4 +1,4 @@
-import { PaymentItemType } from "../../../generated/prisma/enums";
+import type { PaymentItemType } from "../../../generated/prisma/enums";
 
 export interface ICreatePayment {
 	requestId: string;

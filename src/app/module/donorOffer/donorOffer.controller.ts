@@ -1,6 +1,6 @@
 // donorOffer.controller.ts
 
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import httpStatus from "http-status";
 
 import { donorOfferService } from "./donorOffer.service";
