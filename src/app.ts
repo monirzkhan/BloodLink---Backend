@@ -15,6 +15,8 @@ import { pushNotificationRouter } from "./app/module/pushNotification/pushNotifi
 import { donorOfferRouter } from "./app/module/donorOffer/donorOffer.route";
 import { contactRoutes } from "./app/module/contact/contact.route";
 import { appointmentRoutes } from "./app/module/Appoinment/appoinment.routes";
+import { notFound } from "./app/middleware/notFound";
+import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 
 const app: Application = express();
 
@@ -52,5 +54,8 @@ app.get("/", async (req: Request, res: Response) => {
 		email: "mmonirz.dev@gmail.com",
 	});
 });
+
+app.use(notFound)
+app.use(globalErrorHandler)
 
 export default app;
