@@ -49,9 +49,8 @@ const profileImageUpdate = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
-
 export const userController = {
 	getAllUsers,
 	updateUserProfile,
-	profileImageUpdate
+	profileImageUpdate,
 };

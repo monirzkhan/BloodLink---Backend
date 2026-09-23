@@ -7,7 +7,7 @@ import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utility/AppError";
 import type { IUserProfileUpdatePayload } from "./user.interface";
 import { tr } from "zod/locales";
-import { UploadApiResponse } from "cloudinary";
+import type { UploadApiResponse } from "cloudinary";
 import { cloudinary } from "../../lib/cloudinary";
 
 const getAllUsers = async (query: IQuery) => {
@@ -368,5 +368,5 @@ const uploadProfileImage = async (buffer: Buffer, userId: string) => {
 export const userService = {
 	getAllUsers,
 	updateProfile,
-	uploadProfileImage
+	uploadProfileImage,
 };

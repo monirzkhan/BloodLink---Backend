@@ -1,5 +1,7 @@
 import {
 	AppointmentStatus,
+	BloodRequestStatus,
+	DonationStatus,
 	DonorOfferStatus,
 	PaymentStatus,
 	ReservationStatus,
@@ -16,7 +18,13 @@ const generateAppointmentNumber = () => {
 		.padStart(4, "0")}`;
 };
 
-const createAppointment = async (
+const generateDonationNumber = () => {
+	return `DON-${Date.now()}-${Math.floor(Math.random() * 10000)
+		.toString()
+		.padStart(4, "0")}`;
+};
+
+export const createAppointment = async (
 	donorId: string,
 	payload: ICreateAppointment,
 ) => {
@@ -46,6 +54,11 @@ const createAppointment = async (
 					status: DonorOfferStatus.ACCEPTED,
 				},
 				include: {
+					donor: {
+						include: {
+							donorProfile: true,
+						},
+					},
 					reservation: {
 						include: {
 							appointment: true,
@@ -53,6 +66,7 @@ const createAppointment = async (
 					},
 				},
 			},
+
 			payments: {
 				where: {
 					status: PaymentStatus.SUCCESS,
@@ -104,18 +118,76 @@ const createAppointment = async (
 		);
 	}
 
-	const appointment = await prisma.appointment.create({
-		data: {
-			appointmentNumber: generateAppointmentNumber(),
-			requestId,
-			donorId,
-			reservationId: reservation.id,
-			appointmentDate: date,
-			status: AppointmentStatus.SCHEDULED,
-		},
-	});
+	/*
+	 * Don't allow appointment after the
+	 * request has already been completed.
+	 */
+	if (
+		request.status === BloodRequestStatus.COMPLETED ||
+		request.status === BloodRequestStatus.CANCELLED ||
+		request.status === BloodRequestStatus.EXPIRED
+	) {
+		throw new AppError(
+			httpStatus.CONFLICT,
+			"This blood request is no longer active",
+		);
+	}
 
-	return appointment;
+	const result = await prisma.$transaction(
+		async (tx) => {
+			const appointment = await tx.appointment.create({
+				data: {
+					appointmentNumber: generateAppointmentNumber(),
+
+					requestId,
+
+					donorId,
+
+					reservationId: reservation.id,
+
+					appointmentDate: date,
+
+					status: AppointmentStatus.SCHEDULED,
+
+					screeningStatus: "PENDING",
+				},
+			});
+
+			const donation = await tx.donation.create({
+				data: {
+					donationNumber: generateDonationNumber(),
+
+					requestId,
+
+					donorId,
+
+					hospitalId: request.hospitalId,
+
+					appointmentId: appointment.id,
+
+					bloodGroup: request.bloodGroup,
+
+					component: request.component,
+
+					units: 1,
+
+					screeningStatus: "PENDING",
+
+					donationStatus: DonationStatus.SCHEDULED,
+				},
+			});
+
+			return {
+				appointment,
+				donation,
+			};
+		},
+		{
+			isolationLevel: "Serializable",
+		},
+	);
+
+	return result;
 };
 
 export const appointmentService = {
