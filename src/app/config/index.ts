@@ -42,4 +42,7 @@ export default {
 	vapid_email: process.env.VAPID_EMAIL!,
 	vapid_public_key: process.env.VAPID_PUBLIC_KEY!,
 	vapid_private_key: process.env.VAPID_PRIVATE_KEY!,
+	cloudinary_name: process.env.CLOUDINARY_NAME!,
+	cloudinary_api_key: process.env.CLOUDINARY_API_KEY!,
+	cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET!,
 };

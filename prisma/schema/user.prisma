@@ -12,6 +12,11 @@ model User {
   status UserStatus @default(ACTIVE)
 
   emailVerified Boolean @default(false)
+  imageUrl           String       @default("")
+  imagePublicId      String       @default("")
+  needPasswordChange Boolean      @default(false)
+  isDeleted          Boolean      @default(false)
+  deletedAt          DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

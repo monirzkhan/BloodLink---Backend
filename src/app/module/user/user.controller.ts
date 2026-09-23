@@ -28,7 +28,30 @@ const updateUserProfile = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const profileImageUpdate = catchAsync(async (req: Request, res: Response) => {
+	if (!req.file) {
+		throw new Error("No image uploaded");
+	}
+	const userId = req.user?.userId;
+
+	const result = await userService.uploadProfileImage(
+		req.file?.buffer,
+		userId!,
+	);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Profile Image Updated Successfully",
+		data: {
+			result,
+		},
+	});
+});
+
+
 export const userController = {
 	getAllUsers,
 	updateUserProfile,
+	profileImageUpdate
 };
