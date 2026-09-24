@@ -22,6 +22,12 @@ import { transporter } from "../../lib/nodemailer";
 import ejs from "ejs";
 
 export const findAndMatchDonors = async (requestId: string) => {
+
+	console.log("========================================");
+console.log("🩸 DONOR MATCHING STARTED");
+console.log("Request ID:", requestId);
+console.log("========================================");
+
 	const request = await prisma.bloodRequest.findUnique({
 		where: {
 			id: requestId,
@@ -32,7 +38,13 @@ export const findAndMatchDonors = async (requestId: string) => {
 		throw new AppError(HttpStatus.NOT_FOUND, "Blood request not found");
 	}
 
+	console.log("✅ Request found:", request.id);
+console.log("Blood Group:", request.bloodGroup);
+console.log("Urgency:", request.urgency);
+
 	const compatibleGroups = getCompatibleBloodGroups(request.bloodGroup);
+
+	console.log("Compatible groups:", compatibleGroups);
 
 	//Find Existing Offer
 	const existingOffers = await prisma.bloodRequestDonor.findMany({
@@ -88,6 +100,8 @@ export const findAndMatchDonors = async (requestId: string) => {
 		// 	donorProfile: true,
 		// },
 	});
+
+	console.log("Total eligible donors from DB:", donors.length);
 	// const donorLat = donors[0].donorProfile?.latitude
 	// 	? Number(donors[0].donorProfile?.latitude)
 	// 	: null;
@@ -184,6 +198,8 @@ export const findAndMatchDonors = async (requestId: string) => {
 		NORMAL: 15,
 	};
 
+	console.log("Candidates after distance/eligibility:", candidates.length);
+
 	const selectedDonors = candidates.slice(0, donorLimit[request.urgency]);
 
 	if (selectedDonors.length === 0) {
@@ -198,6 +214,12 @@ export const findAndMatchDonors = async (requestId: string) => {
 
 		return [];
 	}
+
+	console.log("Selected donors:", selectedDonors.length);
+console.log(
+	"Selected donor IDs:",
+	selectedDonors.map((d) => d.donorId),
+);
 
 	// await prisma.$transaction([
 	// 	prisma.bloodRequestDonor.createMany({
@@ -224,6 +246,7 @@ export const findAndMatchDonors = async (requestId: string) => {
 	// 	}),
 
 	// ]);
+	console.log("⏳ Creating donor offers...");
 
 	const result = await prisma.$transaction(async (tx) => {
 		const createdOffers: any = [];
@@ -276,7 +299,8 @@ export const findAndMatchDonors = async (requestId: string) => {
 	// 	})),
 	// 	skipDuplicates: true,
 	// });
-
+console.log("✅ Donor offers created");
+console.log("✅ Request status updated to DONOR_FOUND");
 	//send Email and SMS
 	const sendFakeSms = async (phone: string, message: string) => {
 		console.log(`
@@ -293,7 +317,7 @@ export const findAndMatchDonors = async (requestId: string) => {
 	// ========================================
 	// SEND EMAIL + FAKE SMS
 	// ========================================
-
+	console.log("📧 Starting donor notifications...");
 	const notificationResults = await Promise.allSettled(
 		selectedDonors.map(async (candidate) => {
 			try {
@@ -331,7 +355,7 @@ export const findAndMatchDonors = async (requestId: string) => {
 						"blood-request-donor.ejs",
 					);
 
-					console.log("Email template:", templatePath);
+					// console.log("Email template:", templatePath);
 
 					const templateData = {
 						donorName: donor.name,
@@ -395,7 +419,7 @@ export const findAndMatchDonors = async (requestId: string) => {
 			}
 		}),
 	);
-
+	console.log("✅ Donor notifications completed");
 	console.log("Notification results:", notificationResults);
 
 	//send Push Notification
