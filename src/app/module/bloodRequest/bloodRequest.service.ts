@@ -213,8 +213,12 @@ const createBloodRequest = async (
 
 	//send Email with OTP
 	const templatePath = path.join(
-		process.cwd(),
-		"/src/app/templates/blood-request/new-blood.request.ejs",
+	process.cwd(),
+	"src",
+	"app",
+	"templates",
+	"blood-request",
+	"new-blood.request.ejs",
 	);
 	const templateData = {
 		requestNumber: requestNumber,
@@ -355,13 +359,27 @@ const verifyBloodRequestByAdmin = async (
 	});
 
 	// Start donor matching
-	try {
-	await findAndMatchDonors(updatedRequest.id);
+try {
+	const selectedDonors = await findAndMatchDonors(updatedRequest.id);
+
+	console.log(
+		`Donor matching completed: ${selectedDonors.length} donors`,
+	);
 } catch (error) {
 	console.error(
-		`Donor matching failed for request ${updatedRequest.id}:`,
+		`Donor matching failed for request ${updatedRequest.id}`,
 		error,
 	);
+
+	
+	await prisma.bloodRequest.update({
+		where: {
+			id: updatedRequest.id,
+		},
+		data: {
+			status: BloodRequestStatus.SEARCHING_DONORS,
+		},
+	});
 }
 	// void findAndMatchDonors(updatedRequest.id).catch((error) => {
 	// 	console.error(

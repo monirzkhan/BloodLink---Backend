@@ -22,12 +22,6 @@ import { transporter } from "../../lib/nodemailer";
 import ejs from "ejs";
 
 export const findAndMatchDonors = async (requestId: string) => {
-
-	console.log("========================================");
-console.log("🩸 DONOR MATCHING STARTED");
-console.log("Request ID:", requestId);
-console.log("========================================");
-
 	const request = await prisma.bloodRequest.findUnique({
 		where: {
 			id: requestId,
@@ -38,13 +32,7 @@ console.log("========================================");
 		throw new AppError(HttpStatus.NOT_FOUND, "Blood request not found");
 	}
 
-	console.log("✅ Request found:", request.id);
-console.log("Blood Group:", request.bloodGroup);
-console.log("Urgency:", request.urgency);
-
 	const compatibleGroups = getCompatibleBloodGroups(request.bloodGroup);
-
-	console.log("Compatible groups:", compatibleGroups);
 
 	//Find Existing Offer
 	const existingOffers = await prisma.bloodRequestDonor.findMany({
@@ -83,6 +71,9 @@ console.log("Urgency:", request.urgency);
 		},
 		select: {
 			id: true,
+			name: true,
+			email: true,
+			phone: true,
 			donorProfile: {
 				select: {
 					bloodGroup: true,
@@ -95,20 +86,9 @@ console.log("Urgency:", request.urgency);
 				},
 			},
 		},
-
-		// include: {
-		// 	donorProfile: true,
-		// },
 	});
 
-	console.log("Total eligible donors from DB:", donors.length);
-	// const donorLat = donors[0].donorProfile?.latitude
-	// 	? Number(donors[0].donorProfile?.latitude)
-	// 	: null;
-	// const donorLong = donors[0].donorProfile?.longitude
-	// 	? Number(donors[0].donorProfile.longitude)
-	// 	: null;
-
+	//calculate match score
 	const calculateMatchScore = (distanceKm: number | null) => {
 		if (distanceKm === null) {
 			return 30;
@@ -148,10 +128,10 @@ console.log("Urgency:", request.urgency);
 			let distanceKm: number | null = null;
 
 			if (
-				request.latitude &&
-				request.longitude &&
-				profile.latitude &&
-				profile.longitude
+			request.latitude != null &&
+			request.longitude != null &&
+			profile.latitude != null &&
+			profile.longitude != null
 			) {
 				distanceKm = calculateDistanceKm(
 					Number(request.latitude),
@@ -198,8 +178,6 @@ console.log("Urgency:", request.urgency);
 		NORMAL: 15,
 	};
 
-	console.log("Candidates after distance/eligibility:", candidates.length);
-
 	const selectedDonors = candidates.slice(0, donorLimit[request.urgency]);
 
 	if (selectedDonors.length === 0) {
@@ -214,12 +192,6 @@ console.log("Urgency:", request.urgency);
 
 		return [];
 	}
-
-	console.log("Selected donors:", selectedDonors.length);
-console.log(
-	"Selected donor IDs:",
-	selectedDonors.map((d) => d.donorId),
-);
 
 	// await prisma.$transaction([
 	// 	prisma.bloodRequestDonor.createMany({
@@ -246,50 +218,81 @@ console.log(
 	// 	}),
 
 	// ]);
-	console.log("⏳ Creating donor offers...");
 
-	const result = await prisma.$transaction(async (tx) => {
-		const createdOffers: any = [];
+	
+		const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-		for (const donor of selectedDonors) {
-			const expiresAt = new Date(
-				Date.now() + 24 * 60 * 60 * 1000, // 24 hrs
-			);
-
-			const offer = await tx.bloodRequestDonor.upsert({
-				where: {
-					requestId_donorId: {
+		await prisma.$transaction(
+			[
+				prisma.bloodRequestDonor.createMany({
+					data: selectedDonors.map((donor) => ({
 						requestId: request.id,
 						donorId: donor.donorId,
+						matchScore: donor.matchScore,
+						distanceKm: donor.distanceKm,
+						status: DonorOfferStatus.OFFERED,
+						expiresAt,
+						notifiedAt: new Date(),
+					})),
+					skipDuplicates: true,
+				}),
+
+				prisma.bloodRequest.update({
+					where: {
+						id: request.id,
 					},
-				},
-				update: {
-					notifiedAt: new Date(),
-				},
-				create: {
-					requestId: request.id,
-					donorId: donor.donorId,
-					matchScore: donor.matchScore,
-					distanceKm: donor.distanceKm,
-					status: DonorOfferStatus.OFFERED,
-					expiresAt,
-				},
-			});
-
-			createdOffers.push(offer);
-		}
-
-		await tx.bloodRequest.update({
-			where: {
-				id: request.id,
+					data: {
+						status: BloodRequestStatus.DONOR_FOUND,
+					},
+				}),
+			],
+			{
+				timeout: 15000,
 			},
-			data: {
-				status: BloodRequestStatus.DONOR_FOUND,
-			},
-		});
+		);
 
-		return createdOffers;
-	});
+		// const result = await prisma.$transaction(async (tx) => {
+		// const createdOffers: any = [];
+
+		// for (const donor of selectedDonors) {
+		// 	const expiresAt = new Date(
+		// 		Date.now() + 24 * 60 * 60 * 1000, // 24 hrs
+		// 	);
+
+		// 	const offer = await tx.bloodRequestDonor.upsert({
+		// 		where: {
+		// 			requestId_donorId: {
+		// 				requestId: request.id,
+		// 				donorId: donor.donorId,
+		// 			},
+		// 		},
+		// 		update: {
+		// 			notifiedAt: new Date(),
+		// 		},
+		// 		create: {
+		// 			requestId: request.id,
+		// 			donorId: donor.donorId,
+		// 			matchScore: donor.matchScore,
+		// 			distanceKm: donor.distanceKm,
+		// 			status: DonorOfferStatus.OFFERED,
+		// 			expiresAt,
+		// 		},
+		// 	});
+
+		// 	createdOffers.push(offer);
+		// }
+
+		// await tx.bloodRequest.update({
+		// 	where: {
+		// 		id: request.id,
+		// 	},
+		// 	data: {
+		// 		status: BloodRequestStatus.DONOR_FOUND,
+		// 	},
+		// });
+
+		// return createdOffers;
+	// });
 
 	// await prisma.donorReservation.createMany({
 	// 	data: result.map((offer: any) => ({
@@ -299,8 +302,7 @@ console.log(
 	// 	})),
 	// 	skipDuplicates: true,
 	// });
-console.log("✅ Donor offers created");
-console.log("✅ Request status updated to DONOR_FOUND");
+
 	//send Email and SMS
 	const sendFakeSms = async (phone: string, message: string) => {
 		console.log(`
@@ -317,7 +319,7 @@ console.log("✅ Request status updated to DONOR_FOUND");
 	// ========================================
 	// SEND EMAIL + FAKE SMS
 	// ========================================
-	console.log("📧 Starting donor notifications...");
+	
 	const notificationResults = await Promise.allSettled(
 		selectedDonors.map(async (candidate) => {
 			try {
