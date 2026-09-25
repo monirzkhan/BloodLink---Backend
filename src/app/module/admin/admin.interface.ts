@@ -74,7 +74,7 @@ export interface IAdminRequestFilters {
 }
 
 export interface IAuditLogFilters {
-  actorId?: string;
+  userId?: string;
   action?: string;
   entity?: string;
   entityId?: string;

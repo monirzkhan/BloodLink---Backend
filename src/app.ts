@@ -18,6 +18,7 @@ import { appointmentRoutes } from "./app/module/Appoinment/appoinment.routes";
 import { notFound } from "./app/middleware/notFound";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { donationRoutes } from "./app/module/donation/donation.route";
+import { adminRouters } from "./app/module/admin/admin.route";
 
 const app: Application = express();
 
@@ -44,6 +45,7 @@ app.use("/api/v1/push-notification", pushNotificationRouter);
 app.use("/api/v1/contact", contactRoutes);
 app.use("/api/v1/appointment", appointmentRoutes);
 app.use("/api/v1/donation", donationRoutes);
+app.use("/api/v1/admin",adminRouters);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {
