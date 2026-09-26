@@ -6,6 +6,7 @@ import {
 	PaymentStatus,
 	UserRole,
 	UserStatus,
+	VerificationStatus,
 } from "../../../generated/prisma/enums";
 import type {
 	AuditLogWhereInput,
@@ -13,12 +14,15 @@ import type {
 	UserWhereInput,
 } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
+import { AppError } from "../../utility/AppError";
 import { findAndMatchDonors } from "../bloodRequest/bloodRequestDonor.service";
 import type {
 	IAdminRequestFilters,
 	IAdminUserFilters,
 	IAuditLogFilters,
+	IVerifyBloodRequest,
 } from "./admin.interface";
+import httpStatus from "http-status";
 
 const getDashboardStats = async () => {
 	const [
@@ -872,69 +876,155 @@ const updateUserStatus = async (
 const verifyBloodRequest = async (
 	requestId: string,
 	adminId: string,
-	approved: boolean,
-	note?: string,
+	payload: IVerifyBloodRequest,
 	ipAddress?: string,
 ) => {
-	const request = await prisma.bloodRequest.findUnique({
+	// ============================================
+	// 1. Verify Admin
+	// ============================================
+
+	const admin = await prisma.user.findUnique({
+		where: {
+			id: adminId,
+		},
+		select: {
+			id: true,
+			role: true,
+			status: true,
+		},
+	});
+
+	if (!admin) {
+		throw new AppError(httpStatus.NOT_FOUND, "Admin not found");
+	}
+
+	if (admin.role !== UserRole.ADMIN && admin.role !== UserRole.SUPER_ADMIN) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"Only admin can verify blood requests",
+		);
+	}
+
+	// admin Active check
+	if (admin.status !== UserStatus.ACTIVE) {
+		throw new AppError(httpStatus.FORBIDDEN, "Admin account is not active");
+	}
+
+	// ============================================
+	// 2. Find Blood Request
+	// ============================================
+
+	const bloodRequest = await prisma.bloodRequest.findUnique({
 		where: {
 			id: requestId,
 		},
 	});
 
-	if (!request) {
-		throw new Error("Blood request not found");
+	if (!bloodRequest) {
+		throw new AppError(httpStatus.NOT_FOUND, "Blood request not found");
 	}
 
-	if (request.status !== BloodRequestStatus.PENDING_VERIFICATION) {
-		throw new Error("Only pending requests can be verified");
+	// ============================================
+	// 3. Check Current Status
+	// ============================================
+
+	if (bloodRequest.status !== BloodRequestStatus.PENDING_VERIFICATION) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"Only pending blood requests can be verified",
+		);
 	}
 
-	const newStatus = approved
-		? BloodRequestStatus.SEARCHING_DONORS
-		: BloodRequestStatus.REJECTED;
+	// ============================================
+	// 4. Determine Verification Result
+	// ============================================
 
-	const result = await prisma.$transaction(async (tx) => {
-		const updatedRequest = await tx.bloodRequest.update({
+	const isRejected = payload.verificationStatus === VerificationStatus.REJECTED;
+
+	const newStatus = isRejected
+		? BloodRequestStatus.REJECTED
+		: BloodRequestStatus.SEARCHING_DONORS;
+
+	const newVerificationStatus = isRejected
+		? VerificationStatus.REJECTED
+		: VerificationStatus.APPROVED;
+
+	// ============================================
+	// 5. Update Request + Create Audit Log
+	//    in ONE transaction
+	// ============================================
+
+	const updatedRequest = await prisma.$transaction(async (tx) => {
+		const updated = await tx.bloodRequest.update({
 			where: {
 				id: requestId,
 			},
 
 			data: {
+				verificationStatus: newVerificationStatus,
+
 				status: newStatus,
 
 				verifiedById: adminId,
 
 				verifiedAt: new Date(),
 
-				rejectionReason: approved ? null : note,
+				rejectionReason: isRejected ? payload.rejectionReason : null,
 			},
 		});
 
 		await tx.auditLog.create({
 			data: {
 				actorId: adminId,
-				action: approved ? "BLOOD_REQUEST_APPROVED" : "BLOOD_REQUEST_REJECTED",
+
+				action: isRejected
+					? "BLOOD_REQUEST_REJECTED"
+					: "BLOOD_REQUEST_APPROVED",
 
 				entity: "BLOOD_REQUEST",
 
 				entityId: requestId,
+
 				ipAddress,
 
 				oldData: {
-					status: request.status,
+					status: bloodRequest.status,
+					verificationStatus: bloodRequest.verificationStatus,
+					rejectionReason: bloodRequest.rejectionReason,
 				},
+
 				newData: {
-					newStatus,
+					status: newStatus,
+					verificationStatus: newVerificationStatus,
+					rejectionReason: isRejected ? payload.rejectionReason : null,
 				},
 			},
 		});
 
-		await findAndMatchDonors(updatedRequest.id);
-		return updatedRequest;
+		return updated;
 	});
 
-	return result;
+	// ============================================
+	// 6. Start Donor Matching ONLY AFTER
+	//    Transaction Has Successfully Committed
+	// ============================================
+
+	if (!isRejected) {
+		try {
+			const selectedDonors = await findAndMatchDonors(updatedRequest.id);
+
+			console.log(
+				`Donor matching completed for request ${updatedRequest.id}: ${selectedDonors.length} donors`,
+			);
+		} catch (error) {
+			console.error(
+				`Donor matching failed for request ${updatedRequest.id}:`,
+				error,
+			);
+		}
+	}
+
+	return updatedRequest;
 };
 
 const verifyDonor = async (

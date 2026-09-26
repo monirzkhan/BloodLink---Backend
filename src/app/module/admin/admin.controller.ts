@@ -116,15 +116,14 @@ const verifyBloodRequest = catchAsync(async (req: Request, res: Response) => {
 	const { requestId } = req.params;
 	const ipAddress = req.ip === "::1" ? "127.0.0.1" : req.ip;
 
-	const { approved, note } = req.body;
+	const payload = req.body;
 
 	const adminId = req.user?.userId;
 
 	const result = await adminService.verifyBloodRequest(
 		requestId as string,
 		adminId as string,
-		approved,
-		note,
+		payload,
 		ipAddress as string,
 	);
 
@@ -132,7 +131,7 @@ const verifyBloodRequest = catchAsync(async (req: Request, res: Response) => {
 		statusCode: 200,
 		success: true,
 
-		message: approved
+		message: payload
 			? "Blood request approved successfully"
 			: "Blood request rejected successfully",
 

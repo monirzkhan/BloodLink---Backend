@@ -3,6 +3,7 @@ import type {
 	BloodRequestStatus,
 	UserRole,
 	UserStatus,
+	VerificationStatus,
 } from "../../../generated/prisma/enums";
 
 export interface IAdminDashboardStats {
@@ -94,6 +95,6 @@ export interface IReportDateRange {
 }
 
 export interface IVerifyBloodRequest {
-	verificationStatus: string;
+	verificationStatus: "APPROVED" | "REJECTED";
 	rejectionReason?: string;
 }

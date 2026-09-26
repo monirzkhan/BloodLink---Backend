@@ -55,3 +55,19 @@ export const updateRequestStatusValidation = z.object({
 
 	note: z.string().max(500).optional(),
 });
+
+export const verifyBloodRequestValidation = z
+	.object({
+		verificationStatus: z.enum(["APPROVED", "REJECTED"]),
+
+		rejectionReason: z.string().trim().optional(),
+	})
+	.superRefine((data, ctx) => {
+		if (data.verificationStatus === "REJECTED" && !data.rejectionReason) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["rejectionReason"],
+				message: "Rejection reason is required when rejecting a blood request",
+			});
+		}
+	});
