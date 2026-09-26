@@ -1,23 +1,22 @@
 model AuditLog {
-  id                  String    @id @default(uuid())
+  id        String @id @default(uuid())
 
-  userId              String?
-  user                User?     @relation(fields: [userId], references: [id])
+  actorId   String?
+  actor     User? @relation(fields: [actorId],references: [id])
 
-  action              String
-  entity              String
-  entityId            String?
+  action    String
+  entity    String
+  entityId  String?
 
-  oldData             Json?
-  newData             Json?
+  oldData   Json?
+  newData   Json?
 
-  ipAddress            String?
-  userAgent            String?
+  ipAddress String?
+  userAgent String?
 
-  createdAt           DateTime  @default(now())
+  createdAt DateTime @default(now())
 
-
-  @@index([userId])
+  @@index([actorId])
   @@index([entity])
   @@index([entityId])
   @@index([createdAt])

@@ -7,10 +7,20 @@ export interface ICreateAccountPayload {
 	phone: string;
 	role: UserRole;
 	donorProfile: {
-		bloodGroup: BloodGroup;
+		bloodGroup?: BloodGroup;
 		division?: string;
 		district?: string;
 		area?: string;
+	};
+	hospitalProfile: {
+		hospitalName?: string;
+		registrationNumber?: string;
+		phone?: string;
+		email?: string;
+		division?: string;
+		district?: string;
+		area?: string;
+		address?: string;
 	};
 }
 export interface IRedisRegistrationPayload {
@@ -28,6 +38,16 @@ export interface IRedisRegistrationPayload {
 		district?: string;
 		area?: string;
 		totalDonations?: number;
+	};
+	hospitalProfile: {
+		hospitalName?: string;
+		registrationNumber?: string;
+		phone?: string;
+		email?: string;
+		division?: string;
+		district?: string;
+		area?: string;
+		address?: string;
 	};
 }
 export interface IVerifyEmailOTPPayload {

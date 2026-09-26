@@ -45,7 +45,7 @@ app.use("/api/v1/push-notification", pushNotificationRouter);
 app.use("/api/v1/contact", contactRoutes);
 app.use("/api/v1/appointment", appointmentRoutes);
 app.use("/api/v1/donation", donationRoutes);
-app.use("/api/v1/admin",adminRouters);
+app.use("/api/v1/admin", adminRouters);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {

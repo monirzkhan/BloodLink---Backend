@@ -31,7 +31,8 @@ import { googleClient } from "../../lib/googleAuth";
 import { getCoordinates } from "../../utility/coordinates";
 
 const generateOTP = async (payload: ICreateAccountPayload) => {
-	const { name, password, phone, role, donorProfile } = payload;
+	const { name, password, phone, role, donorProfile, hospitalProfile } =
+		payload;
 
 	const email = payload.email.trim().toLowerCase();
 
@@ -66,6 +67,7 @@ const generateOTP = async (payload: ICreateAccountPayload) => {
 		phone,
 		role,
 		donorProfile,
+		hospitalProfile,
 	};
 	const redisDataKey = `User-Registration-Data:${email}`;
 
@@ -137,10 +139,12 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 		JSON.parse(redisDataPayload);
 
 	const address = `${userDataPayload.donorProfile.area}, ${userDataPayload.donorProfile.district}, Bangladesh`;
+	const hospitalAddress = `${userDataPayload.hospitalProfile.area}, ${userDataPayload.hospitalProfile.district}, Bangladesh`;
 
 	const coordinates = await getCoordinates(address);
+	const hospitalCoordinates = await getCoordinates(hospitalAddress);
 
-	console.log(coordinates, " from Donor Profile");
+	// console.log(coordinates, " from Donor Profile");
 
 	const createdUser = await prisma.user.create({
 		data: {
@@ -165,9 +169,25 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 					totalDonations: userDataPayload.donorProfile.totalDonations,
 				},
 			},
+			hospitalProfile: {
+				create: {
+					hospitalName: userDataPayload.hospitalProfile.hospitalName!,
+					registrationNumber:
+						userDataPayload.hospitalProfile.registrationNumber,
+					email: userDataPayload.hospitalProfile.email,
+					phone: userDataPayload.hospitalProfile.phone,
+					district: userDataPayload.hospitalProfile.district,
+					division: userDataPayload.hospitalProfile.division,
+					area: userDataPayload.hospitalProfile.area,
+					address: userDataPayload.hospitalProfile.address,
+					latitude: hospitalCoordinates.latitude,
+					longitude: hospitalCoordinates.longitude,
+				},
+			},
 		},
 		include: {
 			donorProfile: true,
+			hospitalProfile: true,
 		},
 		omit: {
 			password: true,

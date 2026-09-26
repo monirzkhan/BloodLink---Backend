@@ -128,10 +128,10 @@ export const findAndMatchDonors = async (requestId: string) => {
 			let distanceKm: number | null = null;
 
 			if (
-			request.latitude != null &&
-			request.longitude != null &&
-			profile.latitude != null &&
-			profile.longitude != null
+				request.latitude != null &&
+				request.longitude != null &&
+				profile.latitude != null &&
+				profile.longitude != null
 			) {
 				distanceKm = calculateDistanceKm(
 					Number(request.latitude),
@@ -219,79 +219,78 @@ export const findAndMatchDonors = async (requestId: string) => {
 
 	// ]);
 
-	
-		const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+	const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-		await prisma.$transaction(
-			[
-				prisma.bloodRequestDonor.createMany({
-					data: selectedDonors.map((donor) => ({
-						requestId: request.id,
-						donorId: donor.donorId,
-						matchScore: donor.matchScore,
-						distanceKm: donor.distanceKm,
-						status: DonorOfferStatus.OFFERED,
-						expiresAt,
-						notifiedAt: new Date(),
-					})),
-					skipDuplicates: true,
-				}),
+	await prisma.$transaction(
+		[
+			prisma.bloodRequestDonor.createMany({
+				data: selectedDonors.map((donor) => ({
+					requestId: request.id,
+					donorId: donor.donorId,
+					matchScore: donor.matchScore,
+					distanceKm: donor.distanceKm,
+					status: DonorOfferStatus.OFFERED,
+					expiresAt,
+					notifiedAt: new Date(),
+				})),
+				skipDuplicates: true,
+			}),
 
-				prisma.bloodRequest.update({
-					where: {
-						id: request.id,
-					},
-					data: {
-						status: BloodRequestStatus.DONOR_FOUND,
-					},
-				}),
-			],
-			{
-				timeout: 15000,
-			},
-		);
+			prisma.bloodRequest.update({
+				where: {
+					id: request.id,
+				},
+				data: {
+					status: BloodRequestStatus.DONOR_FOUND,
+				},
+			}),
+		],
+		{
+			timeout: 15000,
+		},
+	);
 
-		// const result = await prisma.$transaction(async (tx) => {
-		// const createdOffers: any = [];
+	// const result = await prisma.$transaction(async (tx) => {
+	// const createdOffers: any = [];
 
-		// for (const donor of selectedDonors) {
-		// 	const expiresAt = new Date(
-		// 		Date.now() + 24 * 60 * 60 * 1000, // 24 hrs
-		// 	);
+	// for (const donor of selectedDonors) {
+	// 	const expiresAt = new Date(
+	// 		Date.now() + 24 * 60 * 60 * 1000, // 24 hrs
+	// 	);
 
-		// 	const offer = await tx.bloodRequestDonor.upsert({
-		// 		where: {
-		// 			requestId_donorId: {
-		// 				requestId: request.id,
-		// 				donorId: donor.donorId,
-		// 			},
-		// 		},
-		// 		update: {
-		// 			notifiedAt: new Date(),
-		// 		},
-		// 		create: {
-		// 			requestId: request.id,
-		// 			donorId: donor.donorId,
-		// 			matchScore: donor.matchScore,
-		// 			distanceKm: donor.distanceKm,
-		// 			status: DonorOfferStatus.OFFERED,
-		// 			expiresAt,
-		// 		},
-		// 	});
+	// 	const offer = await tx.bloodRequestDonor.upsert({
+	// 		where: {
+	// 			requestId_donorId: {
+	// 				requestId: request.id,
+	// 				donorId: donor.donorId,
+	// 			},
+	// 		},
+	// 		update: {
+	// 			notifiedAt: new Date(),
+	// 		},
+	// 		create: {
+	// 			requestId: request.id,
+	// 			donorId: donor.donorId,
+	// 			matchScore: donor.matchScore,
+	// 			distanceKm: donor.distanceKm,
+	// 			status: DonorOfferStatus.OFFERED,
+	// 			expiresAt,
+	// 		},
+	// 	});
 
-		// 	createdOffers.push(offer);
-		// }
+	// 	createdOffers.push(offer);
+	// }
 
-		// await tx.bloodRequest.update({
-		// 	where: {
-		// 		id: request.id,
-		// 	},
-		// 	data: {
-		// 		status: BloodRequestStatus.DONOR_FOUND,
-		// 	},
-		// });
+	// await tx.bloodRequest.update({
+	// 	where: {
+	// 		id: request.id,
+	// 	},
+	// 	data: {
+	// 		status: BloodRequestStatus.DONOR_FOUND,
+	// 	},
+	// });
 
-		// return createdOffers;
+	// return createdOffers;
 	// });
 
 	// await prisma.donorReservation.createMany({
@@ -319,7 +318,7 @@ export const findAndMatchDonors = async (requestId: string) => {
 	// ========================================
 	// SEND EMAIL + FAKE SMS
 	// ========================================
-	
+
 	const notificationResults = await Promise.allSettled(
 		selectedDonors.map(async (candidate) => {
 			try {
