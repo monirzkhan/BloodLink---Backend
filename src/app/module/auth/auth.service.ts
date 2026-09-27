@@ -139,10 +139,10 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 		JSON.parse(redisDataPayload);
 
 	const address = `${userDataPayload.donorProfile.area}, ${userDataPayload.donorProfile.district}, Bangladesh`;
-	const hospitalAddress = `${userDataPayload.hospitalProfile.area}, ${userDataPayload.hospitalProfile.district}, Bangladesh`;
+	//const hospitalAddress = `${userDataPayload?.hospitalProfile?.area}, ${userDataPayload?.hospitalProfile?.district}, Bangladesh`;
 
 	const coordinates = await getCoordinates(address);
-	const hospitalCoordinates = await getCoordinates(hospitalAddress);
+	// const hospitalCoordinates = await getCoordinates(hospitalAddress);
 
 	// console.log(coordinates, " from Donor Profile");
 
@@ -169,25 +169,25 @@ const createAccount = async (payload: IVerifyEmailOTPPayload) => {
 					totalDonations: userDataPayload.donorProfile.totalDonations,
 				},
 			},
-			hospitalProfile: {
-				create: {
-					hospitalName: userDataPayload.hospitalProfile.hospitalName!,
-					registrationNumber:
-						userDataPayload.hospitalProfile.registrationNumber,
-					email: userDataPayload.hospitalProfile.email,
-					phone: userDataPayload.hospitalProfile.phone,
-					district: userDataPayload.hospitalProfile.district,
-					division: userDataPayload.hospitalProfile.division,
-					area: userDataPayload.hospitalProfile.area,
-					address: userDataPayload.hospitalProfile.address,
-					latitude: hospitalCoordinates.latitude,
-					longitude: hospitalCoordinates.longitude,
-				},
-			},
+			// hospitalProfile: {
+			// 	create: {
+			// 		hospitalName: userDataPayload.hospitalProfile.hospitalName!,
+			// 		registrationNumber:
+			// 			userDataPayload.hospitalProfile.registrationNumber,
+			// 		email: userDataPayload.hospitalProfile.email,
+			// 		phone: userDataPayload.hospitalProfile.phone,
+			// 		district: userDataPayload.hospitalProfile.district,
+			// 		division: userDataPayload.hospitalProfile.division,
+			// 		area: userDataPayload.hospitalProfile.area,
+			// 		address: userDataPayload.hospitalProfile.address,
+			// 		latitude: hospitalCoordinates.latitude,
+			// 		longitude: hospitalCoordinates.longitude,
+			// 	},
+			// },
 		},
 		include: {
 			donorProfile: true,
-			hospitalProfile: true,
+			// hospitalProfile: true,
 		},
 		omit: {
 			password: true,
