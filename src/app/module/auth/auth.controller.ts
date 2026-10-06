@@ -147,6 +147,17 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 		data: {},
 	});
 });
+const logout = catchAsync(async (req: Request, res: Response) => {
+	res.clearCookie("accessToken")
+	res.clearCookie("refreshToken")
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "User Logout Seccessfully",
+		data: {},
+	});
+});
 
 const googleLogin = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
@@ -186,4 +197,5 @@ export const authController = {
 	forgotPassword,
 	resetPassword,
 	googleLogin,
+	logout
 };

@@ -21,6 +21,10 @@ router.post(
 	zoDvalidation(userValidation.userLoginZodSchema),
 	authController.loginUser,
 );
+router.post(
+	"/logout",
+	authController.logout,
+);
 router.get(
 	"/me",
 	auth("ADMIN", "CALLER", "DONOR", "HOSPITAL", "SUPER_ADMIN", "PATIENT"),
